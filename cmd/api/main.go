@@ -17,10 +17,8 @@ import (
 	"go.uber.org/zap"
 )
 
-var cfg *config.Config
-
-func createServer(cfg *config.Config, handler http.Handler) *http.Server {
-	addr := fmt.Sprintf(":%s", cfg.Port)
+func (app *application) createServer(handler http.Handler) *http.Server {
+	addr := fmt.Sprintf(":%s", app.config.Port)
 
 	logger.Info("Configuring server settings")
 
@@ -69,11 +67,11 @@ func runServer(srv *http.Server) {
 }
 
 func main() {
-	cfg = config.Load()
+	cfg := config.Load()
 	logger.Init(cfg.AppEnv)
 	defer logger.Sync()
 
-	ratelimiter := ratelimiter.NewFixedWindowRateLimiter(
+	limiter := ratelimiter.NewFixedWindowRateLimiter(
 		cfg.RateLimitRequestPerTimeframe,
 		cfg.RateLimitTimeframe,
 	)
@@ -93,9 +91,9 @@ func main() {
 	app := &application{
 		config:  cfg,
 		db:      db,
-		limiter: ratelimiter,
+		limiter: limiter,
 	}
 
-	server := createServer(cfg, app.routes())
+	server := app.createServer(app.routes())
 	runServer(server)
 }
