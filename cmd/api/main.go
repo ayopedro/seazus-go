@@ -10,7 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ayopedro/seazus-go/internals/ratelimiter"
 	"github.com/ayopedro/seazus-go/lib/config"
+	"github.com/ayopedro/seazus-go/lib/db"
 	"github.com/ayopedro/seazus-go/lib/logger"
 	"go.uber.org/zap"
 )
@@ -20,7 +22,7 @@ var cfg *config.Config
 func createServer(cfg *config.Config, handler http.Handler) *http.Server {
 	addr := fmt.Sprintf(":%s", cfg.Port)
 
-	logger.Info("Configuring server settings", zap.String("addr", addr))
+	logger.Info("Configuring server settings")
 
 	return &http.Server{
 		Addr:              addr,
@@ -71,15 +73,29 @@ func main() {
 	logger.Init(cfg.AppEnv)
 	defer logger.Sync()
 
-	app := &application{
-		config: cfg,
-		dbConfig: dbConfig{
-			DBURL:        cfg.DBURL,
-			maxOpenConns: cfg.DBMaxOpenConns,
-			maxIdleConns: cfg.DBMaxIdleConns,
-			maxIdleTime:  cfg.DBMaxIdleTime,
-		},
+	ratelimiter := ratelimiter.NewFixedWindowRateLimiter(
+		cfg.RateLimitRequestPerTimeframe,
+		cfg.RateLimitTimeframe,
+	)
+
+	db, err := db.New(
+		cfg.DBURL,
+		cfg.DBMaxOpenConns,
+		cfg.DBMaxIdleConns,
+		cfg.DBMaxIdleTime,
+	)
+	if err != nil {
+		logger.Fatal("failed to connect to db", zap.Error(err))
 	}
+	defer db.Close()
+	logger.Info("Database is connected")
+
+	app := &application{
+		config:  cfg,
+		db:      db,
+		limiter: ratelimiter,
+	}
+
 	server := createServer(cfg, app.routes())
 	runServer(server)
 }

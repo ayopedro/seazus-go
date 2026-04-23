@@ -1,14 +1,19 @@
 package main
 
 import (
+	"database/sql"
 	"net/http"
+	"sync"
 
+	"github.com/ayopedro/seazus-go/internals/ratelimiter"
 	"github.com/ayopedro/seazus-go/lib/config"
 )
 
 type application struct {
-	config   *config.Config
-	dbConfig dbConfig
+	config  *config.Config
+	db      *sql.DB
+	limiter ratelimiter.Limiter
+	wg      sync.WaitGroup
 }
 
 type dbConfig struct {
@@ -27,6 +32,11 @@ func (app *application) routes() http.Handler {
 	// Health route
 	mux.HandleFunc("GET /v1/health", app.HealthCheckHandler)
 
-	handler := logRequest(recoverPanic(mux))
+	var handler http.Handler = mux
+	handler = logRequest(recoverPanic(mux))
+
+	if app.config.AppEnv == "production" {
+		handler = app.rateLimiter(handler)
+	}
 	return handler
 }

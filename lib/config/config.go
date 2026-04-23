@@ -3,18 +3,21 @@ package config
 import (
 	"log"
 	"sync"
+	"time"
 
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	AppEnv         string `mapstructure:"APP_ENV"`
-	Port           string `mapstructure:"PORT"`
-	DBURL          string `mapstructure:"DATABASE_URL"`
-	DBMaxOpenConns int    `mapstructure:"DB_MAX_OPEN_CONNS"`
-	DBMaxIdleConns int    `mapstructure:"DB_MAX_IDLE_CONNS"`
-	DBMaxIdleTime  string `mapstructure:"DB_MAX_IDLE_TIME"`
-	LogLevel       string `mapstructure:"LOG_LEVEL"`
+	AppEnv                       string        `mapstructure:"APP_ENV"`
+	Port                         string        `mapstructure:"PORT"`
+	DBURL                        string        `mapstructure:"DATABASE_URL"`
+	DBMaxOpenConns               int           `mapstructure:"DB_MAX_OPEN_CONNS"`
+	DBMaxIdleConns               int           `mapstructure:"DB_MAX_IDLE_CONNS"`
+	DBMaxIdleTime                string        `mapstructure:"DB_MAX_IDLE_TIME"`
+	LogLevel                     string        `mapstructure:"LOG_LEVEL"`
+	RateLimitRequestPerTimeframe int           `mapstructure:"RATE_LIMIT_REQUEST_PER_TIMEFRAME"`
+	RateLimitTimeframe           time.Duration `mapstructure:"RATE_LIMIT_TIMEFRAME"`
 }
 
 var (
@@ -30,6 +33,8 @@ func Load() *Config {
 		viper.SetDefault("DB_MAX_IDLE_CONNS", 25)
 		viper.SetDefault("DB_MAX_IDLE_TIME", "15m")
 		viper.SetDefault("LOG_LEVEL", "info")
+		viper.SetDefault("RATE_LIMIT_REQUEST_PER_TIMEFRAME", 100)
+		viper.SetDefault("RATE_LIMIT_TIMEFRAME", 1*time.Minute)
 
 		viper.SetConfigName(".env")
 		viper.SetConfigType("env")
