@@ -3,22 +3,31 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
+	"github.com/ayopedro/seazus-go/lib/config"
 	_ "github.com/lib/pq"
 )
 
-func New(addr string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", addr)
+func New(cfg config.DBConfig) (*sql.DB, error) {
+	dsn := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name,
+	)
+	fmt.Println(dsn)
+	db, err := sql.Open("postgres", dsn)
 
 	if err != nil {
 		return nil, err
 	}
 
-	db.SetMaxOpenConns(maxOpenConns)
-	db.SetMaxIdleConns(maxIdleConns)
+	db.SetMaxOpenConns(cfg.MaxOpenConns)
+	db.SetMaxIdleConns(cfg.MaxIdleConns)
 
-	duration, err := time.ParseDuration(maxIdleTime)
+	fmt.Println("Max idle time", cfg.MaxIdleTime)
+
+	duration, err := time.ParseDuration(cfg.MaxIdleTime)
 	if err != nil {
 		return nil, err
 	}

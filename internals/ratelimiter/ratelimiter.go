@@ -9,12 +9,6 @@ type Limiter interface {
 	Allow(ip string) (bool, time.Duration)
 }
 
-type Config struct {
-	RequestPerTimeframe int
-	Timeframe           time.Duration
-	Enabled             bool
-}
-
 type FixedWindowRateLimiter struct {
 	sync.RWMutex
 	clients map[string]int

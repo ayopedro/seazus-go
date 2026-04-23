@@ -72,16 +72,11 @@ func main() {
 	defer logger.Sync()
 
 	limiter := ratelimiter.NewFixedWindowRateLimiter(
-		cfg.RateLimitRequestPerTimeframe,
-		cfg.RateLimitTimeframe,
+		cfg.Limiter.RequestsPerTimeframe,
+		cfg.Limiter.Timeframe,
 	)
 
-	db, err := db.New(
-		cfg.DBURL,
-		cfg.DBMaxOpenConns,
-		cfg.DBMaxIdleConns,
-		cfg.DBMaxIdleTime,
-	)
+	db, err := db.New(cfg.DB)
 	if err != nil {
 		logger.Fatal("failed to connect to db", zap.Error(err))
 	}

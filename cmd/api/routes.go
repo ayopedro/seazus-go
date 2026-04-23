@@ -16,13 +16,6 @@ type application struct {
 	wg      sync.WaitGroup
 }
 
-type dbConfig struct {
-	DBURL        string
-	maxOpenConns int
-	maxIdleConns int
-	maxIdleTime  string
-}
-
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
@@ -34,6 +27,7 @@ func (app *application) routes() http.Handler {
 
 	var handler http.Handler = mux
 	handler = logRequest(recoverPanic(mux))
+	handler = app.cors(handler)
 
 	if app.config.AppEnv == "production" {
 		handler = app.rateLimiter(handler)

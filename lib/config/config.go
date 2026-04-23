@@ -9,15 +9,29 @@ import (
 )
 
 type Config struct {
-	AppEnv                       string        `mapstructure:"APP_ENV"`
-	Port                         string        `mapstructure:"PORT"`
-	DBURL                        string        `mapstructure:"DATABASE_URL"`
-	DBMaxOpenConns               int           `mapstructure:"DB_MAX_OPEN_CONNS"`
-	DBMaxIdleConns               int           `mapstructure:"DB_MAX_IDLE_CONNS"`
-	DBMaxIdleTime                string        `mapstructure:"DB_MAX_IDLE_TIME"`
-	LogLevel                     string        `mapstructure:"LOG_LEVEL"`
-	RateLimitRequestPerTimeframe int           `mapstructure:"RATE_LIMIT_REQUEST_PER_TIMEFRAME"`
-	RateLimitTimeframe           time.Duration `mapstructure:"RATE_LIMIT_TIMEFRAME"`
+	AppEnv         string   `mapstructure:"APP_ENV"`
+	Port           string   `mapstructure:"PORT"`
+	LogLevel       string   `mapstructure:"LOG_LEVEL"`
+	TrustedOrigins []string `mapstructure:"TRUSTED_ORIGINS"`
+	DB             DBConfig `mapstructure:",squash"`
+	Limiter        RateLimitConfig
+}
+
+type DBConfig struct {
+	User         string `mapstructure:"DB_USER"`
+	Password     string `mapstructure:"DB_PASSWORD"`
+	Host         string `mapstructure:"DB_HOST"`
+	Port         string `mapstructure:"DB_PORT"`
+	Name         string `mapstructure:"DB_NAME"`
+	MaxOpenConns int    `mapstructure:"DB_MAX_OPEN_CONNS"`
+	MaxIdleConns int    `mapstructure:"DB_MAX_IDLE_CONNS"`
+	MaxIdleTime  string `mapstructure:"DB_MAX_IDLE_TIME"`
+}
+
+type RateLimitConfig struct {
+	RequestsPerTimeframe int           `mapstructure:"RATE_LIMIT_REQUEST_PER_TIMEFRAME"`
+	Timeframe            time.Duration `mapstructure:"RATE_LIMIT_TIMEFRAME"`
+	Enabled              bool          `mapstructure:"RATE_LIMIT_ENABLED"`
 }
 
 var (
@@ -29,13 +43,15 @@ func Load() *Config {
 	once.Do(func() {
 		viper.SetDefault("APP_ENV", "development")
 		viper.SetDefault("PORT", "8080")
+		viper.SetDefault("DB_HOST", "localhost")
+		// viper.SetDefault("DB_PORT", "5432")
 		viper.SetDefault("DB_MAX_OPEN_CONNS", 25)
 		viper.SetDefault("DB_MAX_IDLE_CONNS", 25)
 		viper.SetDefault("DB_MAX_IDLE_TIME", "15m")
 		viper.SetDefault("LOG_LEVEL", "info")
 		viper.SetDefault("RATE_LIMIT_REQUEST_PER_TIMEFRAME", 100)
 		viper.SetDefault("RATE_LIMIT_TIMEFRAME", 1*time.Minute)
-
+		viper.SetDefault("TRUSTED_ORIGINS", []string{"*"})
 		viper.SetConfigName(".env")
 		viper.SetConfigType("env")
 		viper.AddConfigPath(".")
