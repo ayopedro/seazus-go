@@ -10,10 +10,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ayopedro/seazus-go/internals/ratelimiter"
-	"github.com/ayopedro/seazus-go/lib/config"
-	"github.com/ayopedro/seazus-go/lib/db"
-	"github.com/ayopedro/seazus-go/lib/logger"
+	"github.com/ayopedro/seazus-go/internal/config"
+	"github.com/ayopedro/seazus-go/internal/db"
+	"github.com/ayopedro/seazus-go/internal/handler"
+	"github.com/ayopedro/seazus-go/internal/logger"
+	ratelimiter "github.com/ayopedro/seazus-go/internal/middleware"
 	"go.uber.org/zap"
 )
 
@@ -83,10 +84,16 @@ func main() {
 	defer db.Close()
 	logger.Info("Database is connected")
 
+	h := &handler.Handler{
+		AppConfig: cfg,
+		DB:        db,
+	}
+
 	app := &application{
 		config:  cfg,
 		db:      db,
 		limiter: limiter,
+		handler: h,
 	}
 
 	server := app.createServer(app.routes())

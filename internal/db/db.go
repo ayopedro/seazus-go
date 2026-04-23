@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ayopedro/seazus-go/lib/config"
+	"github.com/ayopedro/seazus-go/internal/config"
 	_ "github.com/lib/pq"
 )
 
@@ -15,7 +15,6 @@ func New(cfg config.DBConfig) (*sql.DB, error) {
 		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name,
 	)
-	fmt.Println(dsn)
 	db, err := sql.Open("postgres", dsn)
 
 	if err != nil {
@@ -24,8 +23,6 @@ func New(cfg config.DBConfig) (*sql.DB, error) {
 
 	db.SetMaxOpenConns(cfg.MaxOpenConns)
 	db.SetMaxIdleConns(cfg.MaxIdleConns)
-
-	fmt.Println("Max idle time", cfg.MaxIdleTime)
 
 	duration, err := time.ParseDuration(cfg.MaxIdleTime)
 	if err != nil {

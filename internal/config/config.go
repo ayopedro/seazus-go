@@ -44,7 +44,7 @@ func Load() *Config {
 		viper.SetDefault("APP_ENV", "development")
 		viper.SetDefault("PORT", "8080")
 		viper.SetDefault("DB_HOST", "localhost")
-		// viper.SetDefault("DB_PORT", "5432")
+		viper.SetDefault("DB_PORT", "5432")
 		viper.SetDefault("DB_MAX_OPEN_CONNS", 25)
 		viper.SetDefault("DB_MAX_IDLE_CONNS", 25)
 		viper.SetDefault("DB_MAX_IDLE_TIME", "15m")
