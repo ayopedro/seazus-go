@@ -71,6 +71,15 @@ func main() {
 	logger.Init(cfg.AppEnv)
 	defer logger.Sync()
 
-	server := createServer(cfg, nil)
+	app := &application{
+		config: cfg,
+		dbConfig: dbConfig{
+			DBURL:        cfg.DBURL,
+			maxOpenConns: cfg.DBMaxOpenConns,
+			maxIdleConns: cfg.DBMaxIdleConns,
+			maxIdleTime:  cfg.DBMaxIdleTime,
+		},
+	}
+	server := createServer(cfg, app.routes())
 	runServer(server)
 }

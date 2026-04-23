@@ -8,10 +8,13 @@ import (
 )
 
 type Config struct {
-	AppEnv   string `mapstructure:"APP_ENV"`
-	Port     string `mapstructure:"PORT"`
-	DBURL    string `mapstructure:"DATABASE_URL"`
-	LogLevel string `mapstructure:"LOG_LEVEL"`
+	AppEnv         string `mapstructure:"APP_ENV"`
+	Port           string `mapstructure:"PORT"`
+	DBURL          string `mapstructure:"DATABASE_URL"`
+	DBMaxOpenConns int    `mapstructure:"DB_MAX_OPEN_CONNS"`
+	DBMaxIdleConns int    `mapstructure:"DB_MAX_IDLE_CONNS"`
+	DBMaxIdleTime  string `mapstructure:"DB_MAX_IDLE_TIME"`
+	LogLevel       string `mapstructure:"LOG_LEVEL"`
 }
 
 var (
@@ -23,6 +26,9 @@ func Load() *Config {
 	once.Do(func() {
 		viper.SetDefault("APP_ENV", "development")
 		viper.SetDefault("PORT", "8080")
+		viper.SetDefault("DB_MAX_OPEN_CONNS", 25)
+		viper.SetDefault("DB_MAX_IDLE_CONNS", 25)
+		viper.SetDefault("DB_MAX_IDLE_TIME", "15m")
 		viper.SetDefault("LOG_LEVEL", "info")
 
 		viper.SetConfigName(".env")
