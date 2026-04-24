@@ -12,5 +12,5 @@ type UserService interface {
 
 type AuthService interface {
 	CreateUser(ctx context.Context, u *models.CreateUserRequest) error
-	LoginUser(ctx context.Context, p *models.LoginUserRequest) (*models.AuthUser, error)
+	LoginUser(ctx context.Context, p *models.LoginUserRequest) (*models.AuthResponse, error)
 }

@@ -41,7 +41,7 @@ func (as *authService) CreateUser(ctx context.Context, u *models.CreateUserReque
 	return err
 }
 
-func (as *authService) LoginUser(ctx context.Context, p *models.LoginUserRequest) (*models.AuthUser, error) {
+func (as *authService) LoginUser(ctx context.Context, p *models.LoginUserRequest) (*models.AuthResponse, error) {
 	user, err := as.repo.GetWithEmail(ctx, p.Email)
 	if err != nil {
 		logger.Error("Error getting user:", zap.String("login user", err.Error()))
@@ -56,11 +56,13 @@ func (as *authService) LoginUser(ctx context.Context, p *models.LoginUserRequest
 		return nil, models.ErrInvalidCredentials
 	}
 
-	response := &models.AuthUser{
-		Id:        user.Id,
-		FirstName: user.FirstName,
-		Email:     user.Email,
-		Token:     "random-access-token",
+	response := &models.AuthResponse{
+		User: models.AuthUser{
+			Id:        user.Id,
+			FirstName: user.FirstName,
+			Email:     user.Email,
+		},
+		Token: "random-access-token",
 	}
 
 	return response, nil
