@@ -3,6 +3,11 @@ BINARY_NAME=seazus-api
 BUILD_DIR=bin
 MAIN_PATH=./cmd/api
 
+# Migrations
+GOOSE_DRIVER=postgres
+GOOSE_DBSTRING=postgres://ayotunde:password@localhost:5432/seazus-go?sslmode=disable
+MIGRATIONS_DIR=./migrations
+
 # Go parameters
 GOCMD=go
 GOBUILD=$(GOCMD) build
@@ -11,50 +16,102 @@ GOTEST=$(GOCMD) test
 GOMOD=$(GOCMD) mod
 
 # Linker flags for production
-# -s: Omit the symbol table and debug information
-# -w: Omit the DWARF symbol table
 LDFLAGS=-ldflags="-s -w"
 
+# ----------------------------
+# Default target
+# ----------------------------
 .PHONY: all
 all: tidy format test build
 
+# ----------------------------
+# Dependency management
+# ----------------------------
 .PHONY: tidy
 tidy:
 	$(GOMOD) tidy
 	$(GOMOD) verify
 
+# ----------------------------
+# Code quality
+# ----------------------------
 .PHONY: format
 format:
 	$(GOCMD) fmt ./...
 
 .PHONY: test
-test:
+test: tidy
 	$(GOTEST) -v -race -cover ./...
 
+# ----------------------------
+# Development
+# ----------------------------
 .PHONY: dev
-dev:
+dev: migrate-up
 	air -c .air.toml
 
-## Build targets
+# ----------------------------
+# Build
+# ----------------------------
 .PHONY: build
 build: clean
 	$(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PATH)
 
 .PHONY: build-linux
 build-linux: clean
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux $(MAIN_PATH)
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+	$(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux $(MAIN_PATH)
 
+# ----------------------------
+# Cleanup
+# ----------------------------
 .PHONY: clean
 clean:
 	$(GOCLEAN)
 	rm -rf $(BUILD_DIR)
 
+# ----------------------------
+# Migrations (Goose)
+# ----------------------------
+.PHONY: migrate-create migrate-up migrate-down migrate-status migrate-reset
+
+migrate-create:
+	goose -dir=$(MIGRATIONS_DIR) create $(name) sql
+
+migrate-up:
+	@GOOSE_DRIVER=$(GOOSE_DRIVER) \
+	GOOSE_DBSTRING="$(GOOSE_DBSTRING)" \
+	goose -dir=$(MIGRATIONS_DIR) up
+
+migrate-down:
+	@GOOSE_DRIVER=$(GOOSE_DRIVER) \
+	GOOSE_DBSTRING="$(GOOSE_DBSTRING)" \
+	goose -dir=$(MIGRATIONS_DIR) down
+
+migrate-status:
+	@GOOSE_DRIVER=$(GOOSE_DRIVER) \
+	GOOSE_DBSTRING="$(GOOSE_DBSTRING)" \
+	goose -dir=$(MIGRATIONS_DIR) status
+
+migrate-reset:
+	@GOOSE_DRIVER=$(GOOSE_DRIVER) \
+	GOOSE_DBSTRING="$(GOOSE_DBSTRING)" \
+	goose -dir=$(MIGRATIONS_DIR) reset
+
+# ----------------------------
+# Help
+# ----------------------------
 .PHONY: help
 help:
-	@echo "Usage: make [target]"
+	@echo "Usage:"
 	@echo ""
-	@echo "Targets:"
-	@echo "  build         Build for current OS"
-	@echo "  build-linux   Cross-compile for Linux (Production/Docker)"
-	@echo "  test          Run tests with race detection"
-	@echo "  tidy          Clean up go.mod and verify dependencies"
+	@echo "  make build                 Build binary"
+	@echo "  make build-linux           Cross-compile for Linux"
+	@echo "  make test                  Run tests"
+	@echo "  make dev                   Run dev server"
+	@echo ""
+	@echo "  make migrate-create name=xxx   Create migration"
+	@echo "  make migrate-up                Run migrations"
+	@echo "  make migrate-down              Rollback migration"
+	@echo "  make migrate-status            Show migration status"
+	@echo "  make migrate-reset             Reset all migrations"
