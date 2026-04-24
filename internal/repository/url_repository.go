@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/ayopedro/seazus-go/internal/logger"
 	"github.com/ayopedro/seazus-go/internal/models"
 )
 
@@ -18,7 +17,6 @@ func NewURLRepository(c *sql.DB) *URLRepository {
 }
 
 func (ur *URLRepository) GetOne(ctx context.Context, id, uID string) (*models.URL, error) {
-	logger.Debug(uID)
 	query := `
 		SELECT 
 			id, 
@@ -48,7 +46,6 @@ func (ur *URLRepository) GetOne(ctx context.Context, id, uID string) (*models.UR
 	)
 
 	if err != nil {
-		logger.Debug(err.Error())
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, models.ErrRecordNotFound
 		}
