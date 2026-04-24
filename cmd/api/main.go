@@ -93,7 +93,7 @@ func main() {
 		config:  cfg,
 		db:      db,
 		limiter: limiter,
-		handler: h,
+		h:       h,
 	}
 
 	server := app.createServer(app.routes())

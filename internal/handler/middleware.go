@@ -40,7 +40,12 @@ func RecoverPanic(next http.Handler) http.Handler {
 					zap.String("path", r.URL.Path),
 				)
 
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				utils.WriteError(
+					w,
+					r,
+					http.StatusInternalServerError,
+					errors.New(http.StatusText(http.StatusInternalServerError)),
+				)
 			}
 		}()
 

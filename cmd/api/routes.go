@@ -15,7 +15,7 @@ type application struct {
 	db      *sql.DB
 	limiter ratelimiter.Limiter
 	wg      sync.WaitGroup
-	handler *handler.Handler
+	h       *handler.Handler
 }
 
 func (app *application) routes() http.Handler {
@@ -25,7 +25,17 @@ func (app *application) routes() http.Handler {
 	// ROUTES				||
 	// =======================
 	// Health route
-	mux.HandleFunc("GET /v1/health", app.handler.HealthCheckHandler)
+	mux.HandleFunc("GET /v1/health", app.h.HealthCheckHandler)
+	mux.HandleFunc("GET /v1", app.h.IndexHandler)
+
+	// Auth routes
+	authMux := http.NewServeMux()
+	authMux.HandleFunc("GET /login", app.h.LoginHandler)
+	// authMux.HandleFunc("POST /register", nil)
+	// authMux.HandleFunc("POST /forgot-password", nil)
+
+	// Route grouping
+	mux.Handle("/v1/auth/", http.StripPrefix("/v1/auth", authMux))
 
 	var h http.Handler = mux
 	h = handler.RecoverPanic(h)

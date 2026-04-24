@@ -6,9 +6,7 @@ import (
 	"time"
 
 	"github.com/ayopedro/seazus-go/internal/config"
-	"github.com/ayopedro/seazus-go/internal/logger"
 	"github.com/ayopedro/seazus-go/internal/utils"
-	"go.uber.org/zap"
 )
 
 type Handler struct {
@@ -27,9 +25,5 @@ func (h *Handler) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	err := utils.WriteJSON(w, r, http.StatusOK, response)
-	if err != nil {
-		logger.Error("json encoding failed", zap.Error(err))
-		http.Error(w, "The server encountered a problem", http.StatusInternalServerError)
-	}
+	utils.WriteJSON(w, r, http.StatusOK, response)
 }
