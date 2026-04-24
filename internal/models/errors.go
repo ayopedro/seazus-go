@@ -7,6 +7,8 @@ var (
 	ErrDuplicateEmail      = errors.New("email already exists")
 	ErrInternalServerError = errors.New("Internal server error")
 	ErrUserNotFound        = errors.New("user not found!")
+	ErrInvalidCredentials  = errors.New("invalid credentials. email/password incorrect")
+	ErrInvalidPayload      = errors.New("invalid payload")
 )
 
 var (

@@ -91,10 +91,12 @@ func main() {
 
 	// services
 	us := service.NewUserService(ur)
+	as := service.NewAuthService(ur)
 
 	h := &handler.Handler{
 		AppConfig:   cfg,
 		UserService: us,
+		AuthService: as,
 	}
 
 	app := &application{

@@ -8,4 +8,5 @@ import (
 type Handler struct {
 	AppConfig   *config.Config
 	UserService service.UserService
+	AuthService service.AuthService
 }

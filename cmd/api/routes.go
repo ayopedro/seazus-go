@@ -30,7 +30,7 @@ func (app *application) routes() http.Handler {
 
 	// Auth routes
 	authMux := http.NewServeMux()
-	authMux.HandleFunc("GET /login", app.h.LoginHandler)
+	authMux.HandleFunc("POST /login", app.h.LoginHandler)
 	authMux.HandleFunc("POST /register", app.h.RegisterHandler)
 	// authMux.HandleFunc("POST /forgot-password", nil)
 
@@ -38,11 +38,11 @@ func (app *application) routes() http.Handler {
 	mux.Handle("/v1/auth/", http.StripPrefix("/v1/auth", authMux))
 
 	var h http.Handler = mux
-	h = handler.RecoverPanic(h)
 	h = handler.LogRequest(h)
 	h = handler.CORS(app.config.TrustedOrigins)(h)
 	if app.config.AppEnv == "production" {
 		h = handler.RateLimiter(app.limiter)(h)
 	}
+	h = handler.RecoverPanic(h)
 	return h
 }

@@ -7,6 +7,10 @@ import (
 )
 
 type UserService interface {
-	CreateUser(ctx context.Context, u *models.CreateUserRequest) error
 	GetUserProfile(ctx context.Context, uID string) (*models.User, error)
+}
+
+type AuthService interface {
+	CreateUser(ctx context.Context, u *models.CreateUserRequest) error
+	LoginUser(ctx context.Context, p *models.LoginUserRequest) (*models.AuthUser, error)
 }
