@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -10,9 +11,14 @@ import (
 
 	"github.com/ayopedro/seazus-go/internal/logger"
 	ratelimiter "github.com/ayopedro/seazus-go/internal/middleware"
+	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/ayopedro/seazus-go/internal/utils"
 	"go.uber.org/zap"
 )
+
+type contextKey string
+
+const userContextKey = contextKey("user")
 
 func LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -105,4 +111,39 @@ func CORS(trustedOrigins []string) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func (h *Handler) Protected(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			utils.WriteError(w, r, http.StatusUnauthorized, models.ErrInvalidAuthorization)
+			return
+		}
+
+		parts := strings.Split(authHeader, " ")
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			utils.WriteError(w, r, http.StatusUnauthorized, models.ErrInvalidAuthorization)
+			return
+		}
+
+		claims, err := utils.ValidateToken(parts[1], h.AppConfig.JWTSecret)
+		if err != nil {
+			utils.WriteError(w, r, http.StatusUnauthorized, models.ErrInvalidToken)
+			return
+		}
+
+		user, err := h.UserService.GetUserProfile(r.Context(), claims.UserID)
+		if err != nil {
+			if errors.Is(err, models.ErrUserNotFound) {
+				utils.WriteError(w, r, http.StatusUnauthorized, models.ErrUserNotFound)
+			} else {
+				utils.WriteError(w, r, http.StatusInternalServerError, models.ErrAuthentication)
+			}
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), userContextKey, user)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }

@@ -34,8 +34,14 @@ func (app *application) routes() http.Handler {
 	authMux.HandleFunc("POST /register", app.h.RegisterHandler)
 	// authMux.HandleFunc("POST /forgot-password", nil)
 
+	// protected route
+	userMux := http.NewServeMux()
+	userMux.HandleFunc("GET /me", app.h.GetMyProfile)
+	userMux.HandleFunc("GET /urls/{id}", app.h.GetURLById)
+
 	// Route grouping
 	mux.Handle("/v1/auth/", http.StripPrefix("/v1/auth", authMux))
+	mux.Handle("/v1/users/", http.StripPrefix("/v1/users", app.h.Protected(userMux)))
 
 	var h http.Handler = mux
 	h = handler.LogRequest(h)

@@ -34,7 +34,7 @@ func (ur *UserRepository) Get(ctx context.Context, uId string) (*models.User, er
 	query := `
 		SELECT id, first_name, last_name, email, is_verified, created_at, updated_at
 		FROM users
-		WHERE email = $1;
+		WHERE id = $1;
 		`
 	user := &models.User{}
 	row := ur.client.QueryRowContext(ctx, query, uId)

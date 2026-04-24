@@ -14,3 +14,8 @@ type AuthService interface {
 	CreateUser(ctx context.Context, u *models.CreateUserRequest) error
 	LoginUser(ctx context.Context, p *models.LoginUserRequest) (*models.AuthResponse, error)
 }
+
+type URLService interface {
+	GetURL(ctx context.Context, id, uID string) (*models.URL, error)
+	// CreateShortURL(ctx context.Context, payload *models.CreateURLPayload) (string, error)
+}

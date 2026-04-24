@@ -19,7 +19,7 @@ func (us *userService) GetUserProfile(ctx context.Context, uID string) (*models.
 	user, err := us.repo.Get(ctx, uID)
 
 	if err != nil {
-		return nil, err
+		return nil, models.ErrUserNotFound
 	}
 
 	return user, nil

@@ -2,22 +2,24 @@ package service
 
 import (
 	"context"
+	"errors"
 	"strings"
+	"time"
 
 	"github.com/ayopedro/seazus-go/internal/logger"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/ayopedro/seazus-go/internal/repository"
 	"github.com/ayopedro/seazus-go/internal/utils"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 type authService struct {
-	repo *repository.UserRepository
+	repo      *repository.UserRepository
+	jwtSecret string
 }
 
-func NewAuthService(r *repository.UserRepository) *authService {
-	return &authService{r}
+func NewAuthService(r *repository.UserRepository, jwtSecret string) *authService {
+	return &authService{r, jwtSecret}
 }
 
 func (as *authService) CreateUser(ctx context.Context, u *models.CreateUserRequest) error {
@@ -44,7 +46,9 @@ func (as *authService) CreateUser(ctx context.Context, u *models.CreateUserReque
 func (as *authService) LoginUser(ctx context.Context, p *models.LoginUserRequest) (*models.AuthResponse, error) {
 	user, err := as.repo.GetWithEmail(ctx, p.Email)
 	if err != nil {
-		logger.Error("Error getting user:", zap.String("login user", err.Error()))
+		if errors.Is(err, models.ErrUserNotFound) {
+			return nil, models.ErrInvalidCredentials
+		}
 		return nil, models.ErrInternalServerError
 	}
 
@@ -56,13 +60,15 @@ func (as *authService) LoginUser(ctx context.Context, p *models.LoginUserRequest
 		return nil, models.ErrInvalidCredentials
 	}
 
+	token, _ := utils.GenerateToken(as.jwtSecret, user.Id, 1*time.Hour)
+
 	response := &models.AuthResponse{
 		User: models.AuthUser{
 			Id:        user.Id,
 			FirstName: user.FirstName,
 			Email:     user.Email,
 		},
-		Token: "random-access-token",
+		Token: token,
 	}
 
 	return response, nil

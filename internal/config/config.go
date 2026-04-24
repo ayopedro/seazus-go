@@ -14,6 +14,7 @@ type Config struct {
 	LogLevel       string   `mapstructure:"LOG_LEVEL"`
 	TrustedOrigins []string `mapstructure:"TRUSTED_ORIGINS"`
 	EncryptionKey  string   `mapstructure:"ENCRYPTION_KEY"`
+	JWTSecret      string   `mapstructure:"JWT_SECRET"`
 	DB             DBConfig `mapstructure:",squash"`
 	Limiter        RateLimitConfig
 }
@@ -53,6 +54,7 @@ func Load() *Config {
 		viper.SetDefault("RATE_LIMIT_REQUEST_PER_TIMEFRAME", 100)
 		viper.SetDefault("RATE_LIMIT_TIMEFRAME", 1*time.Minute)
 		viper.SetDefault("TRUSTED_ORIGINS", []string{"*"})
+		viper.SetDefault("JWT_SECRET", "my-super-not-so-secret-secret")
 		viper.SetConfigName(".env")
 		viper.SetConfigType("env")
 		viper.AddConfigPath(".")

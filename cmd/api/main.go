@@ -88,15 +88,18 @@ func main() {
 
 	// repositories
 	ur := repository.NewUserRepository(db)
+	urlr := repository.NewURLRepository(db)
 
 	// services
 	us := service.NewUserService(ur)
-	as := service.NewAuthService(ur)
+	as := service.NewAuthService(ur, cfg.JWTSecret)
+	urls := service.NewURLService(urlr)
 
 	h := &handler.Handler{
 		AppConfig:   cfg,
 		UserService: us,
 		AuthService: as,
+		URLService:  urls,
 	}
 
 	app := &application{
