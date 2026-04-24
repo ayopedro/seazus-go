@@ -31,7 +31,7 @@ func (app *application) routes() http.Handler {
 	// Auth routes
 	authMux := http.NewServeMux()
 	authMux.HandleFunc("GET /login", app.h.LoginHandler)
-	// authMux.HandleFunc("POST /register", nil)
+	authMux.HandleFunc("POST /register", app.h.RegisterHandler)
 	// authMux.HandleFunc("POST /forgot-password", nil)
 
 	// Route grouping

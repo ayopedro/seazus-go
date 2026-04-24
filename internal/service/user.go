@@ -12,15 +12,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserService struct {
-	repo repository.UserRepository
+type userService struct {
+	repo *repository.UserRepository
 }
 
-func NewUserService(repo repository.UserRepository) *UserService {
-	return &UserService{repo}
+func NewUserService(repo *repository.UserRepository) *userService {
+	return &userService{repo}
 }
 
-func (us *UserService) CreateUser(ctx context.Context, u *models.User) error {
+func (us *userService) CreateUser(ctx context.Context, u *models.CreateUserRequest) error {
 	uID, _ := uuid.NewV7()
 
 	hash, err := utils.HashPassword(u.Password)
@@ -42,7 +42,7 @@ func (us *UserService) CreateUser(ctx context.Context, u *models.User) error {
 	return err
 }
 
-func (us *UserService) GetUserProfile(ctx context.Context, uID string) (*models.User, error) {
+func (us *userService) GetUserProfile(ctx context.Context, uID string) (*models.User, error) {
 	user, err := us.repo.Get(ctx, uID)
 
 	if err != nil {

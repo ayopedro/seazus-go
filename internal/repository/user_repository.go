@@ -22,7 +22,7 @@ func (ur *UserRepository) Create(ctx context.Context, u *models.User) error {
 
 	_, err := ur.client.ExecContext(ctx, query, u.Id, u.FirstName, u.LastName, u.Email, u.Password)
 	if err != nil {
-		if strings.Contains(err.Error(), "unique_email") {
+		if strings.Contains(err.Error(), models.Conflict) {
 			return models.ErrDuplicateEmail
 		}
 		return err

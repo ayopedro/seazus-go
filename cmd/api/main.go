@@ -15,6 +15,8 @@ import (
 	"github.com/ayopedro/seazus-go/internal/handler"
 	"github.com/ayopedro/seazus-go/internal/logger"
 	ratelimiter "github.com/ayopedro/seazus-go/internal/middleware"
+	"github.com/ayopedro/seazus-go/internal/repository"
+	"github.com/ayopedro/seazus-go/internal/service"
 	"go.uber.org/zap"
 )
 
@@ -84,9 +86,15 @@ func main() {
 	defer db.Close()
 	logger.Info("Database is connected")
 
+	// repositories
+	ur := repository.NewUserRepository(db)
+
+	// services
+	us := service.NewUserService(ur)
+
 	h := &handler.Handler{
-		AppConfig: cfg,
-		DB:        db,
+		AppConfig:   cfg,
+		UserService: us,
 	}
 
 	app := &application{

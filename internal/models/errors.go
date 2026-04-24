@@ -8,3 +8,7 @@ var (
 	ErrInternalServerError = errors.New("Internal server error")
 	ErrUserNotFound        = errors.New("user not found!")
 )
+
+var (
+	Conflict = "duplicate key value violates unique constraint"
+)
