@@ -4,12 +4,13 @@ import (
 	"net/http"
 
 	"github.com/ayopedro/seazus-go/internal/logger"
+	"github.com/ayopedro/seazus-go/internal/types"
 	"github.com/ayopedro/seazus-go/internal/utils"
 	"go.uber.org/zap"
 )
 
 func (h *Handler) IndexHandler(w http.ResponseWriter, r *http.Request) {
-	response := utils.APIResponseBody{
+	response := types.APIResponseBody{
 		Status:  true,
 		Message: "Welcome to the Seazus(Go) API",
 		Data:    []string{},

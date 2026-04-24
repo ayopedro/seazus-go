@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ayopedro/seazus-go/internal/config"
+	"github.com/ayopedro/seazus-go/internal/types"
 	"github.com/ayopedro/seazus-go/internal/utils"
 )
 
@@ -15,7 +16,7 @@ type Handler struct {
 }
 
 func (h *Handler) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	response := utils.APIResponseBody{
+	response := types.APIResponseBody{
 		Status:  true,
 		Message: "Server is healthy",
 		Data: map[string]string{

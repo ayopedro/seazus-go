@@ -5,10 +5,11 @@ import (
 	"net/http"
 
 	"github.com/ayopedro/seazus-go/internal/logger"
+	"github.com/ayopedro/seazus-go/internal/types"
 	"go.uber.org/zap"
 )
 
-func WriteJSON(w http.ResponseWriter, r *http.Request, status int, response APIResponseBody) error {
+func WriteJSON(w http.ResponseWriter, r *http.Request, status int, response types.APIResponseBody) error {
 	js, err := json.Marshal(response)
 	if err != nil {
 		logger.Error("json encoding failed", zap.Error(err))
@@ -25,7 +26,7 @@ func WriteJSON(w http.ResponseWriter, r *http.Request, status int, response APIR
 }
 
 func WriteError(w http.ResponseWriter, r *http.Request, status int, err error) error {
-	response := APIResponseBody{
+	response := types.APIResponseBody{
 		Status:  false,
 		Message: err.Error(),
 	}
