@@ -47,7 +47,7 @@ test: tidy
 # Development
 # ----------------------------
 .PHONY: dev
-dev: migrate-up
+dev: db-up
 	air -c .air.toml
 
 # ----------------------------
@@ -73,27 +73,27 @@ clean:
 # ----------------------------
 # Migrations (Goose)
 # ----------------------------
-.PHONY: migrate-create migrate-up migrate-down migrate-status migrate-reset
+.PHONY: migrate-create db-up db-down db-status db-reset
 
 migrate-create:
 	goose -dir=$(MIGRATIONS_DIR) create $(name) sql
 
-migrate-up:
+db-up:
 	@GOOSE_DRIVER=$(GOOSE_DRIVER) \
 	GOOSE_DBSTRING="$(GOOSE_DBSTRING)" \
 	goose -dir=$(MIGRATIONS_DIR) up
 
-migrate-down:
+db-down:
 	@GOOSE_DRIVER=$(GOOSE_DRIVER) \
 	GOOSE_DBSTRING="$(GOOSE_DBSTRING)" \
 	goose -dir=$(MIGRATIONS_DIR) down
 
-migrate-status:
+db-status:
 	@GOOSE_DRIVER=$(GOOSE_DRIVER) \
 	GOOSE_DBSTRING="$(GOOSE_DBSTRING)" \
 	goose -dir=$(MIGRATIONS_DIR) status
 
-migrate-reset:
+db-reset:
 	@GOOSE_DRIVER=$(GOOSE_DRIVER) \
 	GOOSE_DBSTRING="$(GOOSE_DBSTRING)" \
 	goose -dir=$(MIGRATIONS_DIR) reset
