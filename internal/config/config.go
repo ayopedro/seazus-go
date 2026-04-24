@@ -13,6 +13,7 @@ type Config struct {
 	Port           string   `mapstructure:"PORT"`
 	LogLevel       string   `mapstructure:"LOG_LEVEL"`
 	TrustedOrigins []string `mapstructure:"TRUSTED_ORIGINS"`
+	EncryptionKey  string   `mapstructure:"ENCRYPTION_KEY"`
 	DB             DBConfig `mapstructure:",squash"`
 	Limiter        RateLimitConfig
 }
