@@ -6,6 +6,7 @@ import (
 	"errors"
 	"strings"
 
+	appErrors "github.com/ayopedro/seazus-go/internal/common"
 	"github.com/ayopedro/seazus-go/internal/models"
 )
 
@@ -22,8 +23,8 @@ func (ur *userRepository) Create(ctx context.Context, u *models.User) error {
 
 	_, err := ur.client.ExecContext(ctx, query, u.Id, u.FirstName, u.LastName, u.Email, u.Password)
 	if err != nil {
-		if strings.Contains(err.Error(), models.Conflict) {
-			return models.ErrDuplicateEmail
+		if strings.Contains(err.Error(), appErrors.Conflict) {
+			return appErrors.ErrDuplicateEmail
 		}
 		return err
 	}
@@ -50,7 +51,7 @@ func (ur *userRepository) Get(ctx context.Context, uId string) (*models.User, er
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrUserNotFound
+			return nil, appErrors.ErrUserNotFound
 		}
 		return nil, err
 	}
@@ -79,7 +80,7 @@ func (ur *userRepository) GetWithEmail(ctx context.Context, email string) (*mode
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrUserNotFound
+			return nil, appErrors.ErrUserNotFound
 		}
 		return nil, err
 	}

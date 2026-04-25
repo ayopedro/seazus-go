@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	appErrors "github.com/ayopedro/seazus-go/internal/common"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/ayopedro/seazus-go/internal/repository"
 )
@@ -19,7 +20,7 @@ func (us *userService) GetUserProfile(ctx context.Context, uID string) (*models.
 	user, err := us.repo.Get(ctx, uID)
 
 	if err != nil {
-		return nil, models.ErrUserNotFound
+		return nil, appErrors.ErrUserNotFound
 	}
 
 	return user, nil

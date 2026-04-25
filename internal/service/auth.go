@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	appErrors "github.com/ayopedro/seazus-go/internal/common"
 	"github.com/ayopedro/seazus-go/internal/logger"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/ayopedro/seazus-go/internal/repository"
@@ -28,7 +29,7 @@ func (as *authService) CreateUser(ctx context.Context, u *models.CreateUserReque
 	hash, err := utils.HashPassword(u.Password)
 	if err != nil {
 		logger.Error("Error hashing password")
-		return models.ErrInternalServerError
+		return appErrors.ErrInternalServerError
 	}
 
 	user := &models.User{
@@ -46,18 +47,18 @@ func (as *authService) CreateUser(ctx context.Context, u *models.CreateUserReque
 func (as *authService) LoginUser(ctx context.Context, p *models.LoginUserRequest) (*models.AuthResponse, error) {
 	user, err := as.repo.GetWithEmail(ctx, p.Email)
 	if err != nil {
-		if errors.Is(err, models.ErrUserNotFound) {
-			return nil, models.ErrInvalidCredentials
+		if errors.Is(err, appErrors.ErrUserNotFound) {
+			return nil, appErrors.ErrInvalidCredentials
 		}
-		return nil, models.ErrInternalServerError
+		return nil, appErrors.ErrInternalServerError
 	}
 
 	if user == nil {
-		return nil, models.ErrInvalidCredentials
+		return nil, appErrors.ErrInvalidCredentials
 	}
 
 	if err = utils.ComparePasswords(p.Password, user.Password); err != nil {
-		return nil, models.ErrInvalidCredentials
+		return nil, appErrors.ErrInvalidCredentials
 	}
 
 	token, _ := utils.GenerateToken(as.jwtSecret, user.Id, 1*time.Hour)

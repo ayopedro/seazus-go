@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
+	appErrors "github.com/ayopedro/seazus-go/internal/common"
 	"github.com/ayopedro/seazus-go/internal/models"
 )
 
@@ -47,7 +48,7 @@ func (ur *urlRepository) GetOne(ctx context.Context, id, uID string) (*models.UR
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrRecordNotFound
+			return nil, appErrors.ErrRecordNotFound
 		}
 		return nil, err
 	}

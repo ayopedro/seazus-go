@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	appErrors "github.com/ayopedro/seazus-go/internal/common"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/ayopedro/seazus-go/internal/types"
 	"github.com/ayopedro/seazus-go/internal/utils"
@@ -14,7 +15,7 @@ func (h *handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &models.LoginUserRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		utils.WriteError(w, r, http.StatusBadRequest, models.ErrInvalidPayload)
+		utils.WriteError(w, r, http.StatusBadRequest, appErrors.ErrInvalidPayload)
 		return
 	}
 
@@ -28,7 +29,7 @@ func (h *handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	authUser, err := h.authService.LoginUser(r.Context(), payload)
 	if err != nil {
-		if errors.Is(err, models.ErrInvalidCredentials) {
+		if errors.Is(err, appErrors.ErrInvalidCredentials) {
 			utils.WriteError(w, r, http.StatusUnauthorized, err)
 			return
 		}
@@ -49,7 +50,7 @@ func (h *handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &models.CreateUserRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		utils.WriteError(w, r, http.StatusBadRequest, models.ErrInvalidPayload)
+		utils.WriteError(w, r, http.StatusBadRequest, appErrors.ErrInvalidPayload)
 		return
 	}
 
@@ -64,7 +65,7 @@ func (h *handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	err := h.authService.CreateUser(r.Context(), payload)
 
 	if err != nil {
-		if errors.Is(err, models.ErrDuplicateEmail) {
+		if errors.Is(err, appErrors.ErrDuplicateEmail) {
 			utils.WriteError(w, r, http.StatusConflict, err)
 			return
 		}

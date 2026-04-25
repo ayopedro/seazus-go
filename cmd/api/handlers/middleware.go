@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
+	appErrors "github.com/ayopedro/seazus-go/internal/common"
 	"github.com/ayopedro/seazus-go/internal/logger"
 	ratelimiter "github.com/ayopedro/seazus-go/internal/middleware"
-	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/ayopedro/seazus-go/internal/utils"
 	"go.uber.org/zap"
 )
@@ -117,28 +117,28 @@ func (h *handler) Protected(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			utils.WriteError(w, r, http.StatusUnauthorized, models.ErrInvalidAuthorization)
+			utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrInvalidAuthorization)
 			return
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			utils.WriteError(w, r, http.StatusUnauthorized, models.ErrInvalidAuthorization)
+			utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrInvalidAuthorization)
 			return
 		}
 
 		claims, err := utils.ValidateToken(parts[1], h.config.JWTSecret)
 		if err != nil {
-			utils.WriteError(w, r, http.StatusUnauthorized, models.ErrInvalidToken)
+			utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrInvalidToken)
 			return
 		}
 
 		user, err := h.userService.GetUserProfile(r.Context(), claims.UserID)
 		if err != nil {
-			if errors.Is(err, models.ErrUserNotFound) {
-				utils.WriteError(w, r, http.StatusUnauthorized, models.ErrUserNotFound)
+			if errors.Is(err, appErrors.ErrUserNotFound) {
+				utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrUserNotFound)
 			} else {
-				utils.WriteError(w, r, http.StatusInternalServerError, models.ErrAuthentication)
+				utils.WriteError(w, r, http.StatusInternalServerError, appErrors.ErrAuthentication)
 			}
 			return
 		}

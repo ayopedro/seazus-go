@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	appErrors "github.com/ayopedro/seazus-go/internal/common"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/ayopedro/seazus-go/internal/repository"
 )
@@ -19,7 +20,7 @@ func (us *urlService) GetURL(ctx context.Context, id, uID string) (*models.URL, 
 	url, err := us.repo.GetOne(ctx, id, uID)
 
 	if err != nil {
-		return nil, models.ErrRecordNotFound
+		return nil, appErrors.ErrRecordNotFound
 	}
 
 	return url, nil

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	appErrors "github.com/ayopedro/seazus-go/internal/common"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/ayopedro/seazus-go/internal/types"
 	"github.com/ayopedro/seazus-go/internal/utils"
@@ -27,7 +28,7 @@ func (h *handler) GetURLById(w http.ResponseWriter, r *http.Request) {
 	url, err := h.urlService.GetURL(r.Context(), id, user_id)
 
 	if err != nil {
-		if errors.Is(err, models.ErrRecordNotFound) {
+		if errors.Is(err, appErrors.ErrRecordNotFound) {
 			utils.WriteError(w, r, http.StatusNotFound, err)
 			return
 		}
