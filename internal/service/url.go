@@ -20,7 +20,7 @@ func (us *urlService) GetURL(ctx context.Context, id, uID string) (*models.URL, 
 	url, err := us.repo.GetOne(ctx, id, uID)
 
 	if err != nil {
-		return nil, appErrors.ErrRecordNotFound
+		return nil, appErrors.ErrNotFound
 	}
 
 	return url, nil

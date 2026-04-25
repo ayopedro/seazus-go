@@ -15,7 +15,7 @@ func (h *handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &models.LoginUserRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		utils.WriteError(w, r, http.StatusBadRequest, appErrors.ErrInvalidPayload)
+		utils.WriteError(w, r, http.StatusBadRequest, appErrors.ErrInvalidInput)
 		return
 	}
 
@@ -50,7 +50,7 @@ func (h *handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &models.CreateUserRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		utils.WriteError(w, r, http.StatusBadRequest, appErrors.ErrInvalidPayload)
+		utils.WriteError(w, r, http.StatusBadRequest, appErrors.ErrInvalidInput)
 		return
 	}
 
@@ -65,7 +65,7 @@ func (h *handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	err := h.authService.CreateUser(r.Context(), payload)
 
 	if err != nil {
-		if errors.Is(err, appErrors.ErrDuplicateEmail) {
+		if errors.Is(err, appErrors.ErrConflict) {
 			utils.WriteError(w, r, http.StatusConflict, err)
 			return
 		}

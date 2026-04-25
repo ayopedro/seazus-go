@@ -117,13 +117,13 @@ func (h *handler) Protected(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrInvalidAuthorization)
+			utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrInvalidToken)
 			return
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrInvalidAuthorization)
+			utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrInvalidToken)
 			return
 		}
 
@@ -135,10 +135,10 @@ func (h *handler) Protected(next http.Handler) http.Handler {
 
 		user, err := h.userService.GetUserProfile(r.Context(), claims.UserID)
 		if err != nil {
-			if errors.Is(err, appErrors.ErrUserNotFound) {
-				utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrUserNotFound)
+			if errors.Is(err, appErrors.ErrNotFound) {
+				utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrNotFound)
 			} else {
-				utils.WriteError(w, r, http.StatusInternalServerError, appErrors.ErrAuthentication)
+				utils.WriteError(w, r, http.StatusInternalServerError, appErrors.ErrForbidden)
 			}
 			return
 		}

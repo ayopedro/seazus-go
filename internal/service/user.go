@@ -24,7 +24,7 @@ func (us *userService) GetUserProfile(ctx context.Context, uID string) (*models.
 	user, err := us.userRepo.Get(ctx, uID)
 
 	if err != nil {
-		return nil, appErrors.ErrUserNotFound
+		return nil, appErrors.ErrNotFound
 	}
 
 	return user, nil
@@ -34,7 +34,7 @@ func (us *userService) GetUserURLs(ctx context.Context, uID string) ([]models.UR
 	urls, err := us.urlRepo.GetUserURLs(ctx, uID)
 
 	if err != nil {
-		return nil, appErrors.ErrInternalServerError
+		return nil, appErrors.ErrInternal
 	}
 
 	return urls, err

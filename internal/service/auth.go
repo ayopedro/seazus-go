@@ -29,7 +29,7 @@ func (as *authService) CreateUser(ctx context.Context, u *models.CreateUserReque
 	hash, err := utils.HashPassword(u.Password)
 	if err != nil {
 		logger.Error("Error hashing password")
-		return appErrors.ErrInternalServerError
+		return appErrors.ErrInternal
 	}
 
 	user := &models.User{
@@ -47,10 +47,10 @@ func (as *authService) CreateUser(ctx context.Context, u *models.CreateUserReque
 func (as *authService) LoginUser(ctx context.Context, p *models.LoginUserRequest) (*models.AuthResponse, error) {
 	user, err := as.repo.GetWithEmail(ctx, p.Email)
 	if err != nil {
-		if errors.Is(err, appErrors.ErrUserNotFound) {
-			return nil, appErrors.ErrInvalidCredentials
+		if errors.Is(err, appErrors.ErrNotFound) {
+			return nil, appErrors.ErrInvalidToken
 		}
-		return nil, appErrors.ErrInternalServerError
+		return nil, appErrors.ErrInternal
 	}
 
 	if user == nil {

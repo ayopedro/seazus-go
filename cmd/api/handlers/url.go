@@ -15,7 +15,7 @@ func (h *handler) GetURLById(w http.ResponseWriter, r *http.Request) {
 	url, err := h.urlService.GetURL(r.Context(), id, user_id)
 
 	if err != nil {
-		if errors.Is(err, appErrors.ErrRecordNotFound) {
+		if errors.Is(err, appErrors.ErrNotFound) {
 			utils.WriteError(w, r, http.StatusNotFound, err)
 		}
 		utils.WriteError(w, r, http.StatusInternalServerError, err)

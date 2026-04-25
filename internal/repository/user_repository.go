@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"strings"
 
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
@@ -23,10 +22,7 @@ func (ur *userRepository) Create(ctx context.Context, u *models.User) error {
 
 	_, err := ur.client.ExecContext(ctx, query, u.Id, u.FirstName, u.LastName, u.Email, u.Password)
 	if err != nil {
-		if strings.Contains(err.Error(), appErrors.Conflict) {
-			return appErrors.ErrDuplicateEmail
-		}
-		return err
+		return appErrors.MapPostgresError(err)
 	}
 	return nil
 }
@@ -50,10 +46,7 @@ func (ur *userRepository) Get(ctx context.Context, uId string) (*models.User, er
 		&user.UpdatedAt,
 	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, appErrors.ErrUserNotFound
-		}
-		return nil, err
+		return nil, appErrors.MapPostgresError(err)
 	}
 
 	return user, nil
@@ -79,10 +72,7 @@ func (ur *userRepository) GetWithEmail(ctx context.Context, email string) (*mode
 		&user.UpdatedAt,
 	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, appErrors.ErrUserNotFound
-		}
-		return nil, err
+		return nil, appErrors.MapPostgresError(err)
 	}
 
 	return user, nil
