@@ -20,10 +20,11 @@ type Handler interface {
 	IndexHandler(w http.ResponseWriter, r *http.Request)
 	LoginHandler(w http.ResponseWriter, r *http.Request)
 	RegisterHandler(w http.ResponseWriter, r *http.Request)
-	GetMyProfile(w http.ResponseWriter, r *http.Request)
-	GetURLById(w http.ResponseWriter, r *http.Request)
-	GetUserURLS(w http.ResponseWriter, r *http.Request)
+	GetMyProfileHandler(w http.ResponseWriter, r *http.Request)
+	GetURLByIdHandler(w http.ResponseWriter, r *http.Request)
+	GetUserURLSHandler(w http.ResponseWriter, r *http.Request)
 	HealthCheckHandler(w http.ResponseWriter, r *http.Request)
+	CreateURLHandler(w http.ResponseWriter, r *http.Request)
 
 	Protected(next http.Handler) http.Handler
 }

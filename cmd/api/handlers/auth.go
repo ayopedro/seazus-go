@@ -20,10 +20,7 @@ func (h *handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if payload.Email == "" || payload.Password == "" {
-		utils.WriteJSON(w, r, http.StatusBadRequest, types.APIResponseBody{
-			Status:  false,
-			Message: "email and password are required",
-		})
+		utils.WriteError(w, r, http.StatusBadRequest, appErrors.ErrInvalidInput)
 		return
 	}
 

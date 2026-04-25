@@ -25,8 +25,8 @@ func (app *application) routes() http.Handler {
 	// ROUTES				||
 	// =======================
 	// Health route
-	mux.HandleFunc("GET /v1/health", app.h.HealthCheckHandler)
 	mux.HandleFunc("GET /v1", app.h.IndexHandler)
+	mux.HandleFunc("GET /v1/health", app.h.HealthCheckHandler)
 
 	// Auth routes
 	authMux := http.NewServeMux()
@@ -35,14 +35,20 @@ func (app *application) routes() http.Handler {
 	// authMux.HandleFunc("POST /forgot-password", nil)
 
 	// protected route
-	userMux := http.NewServeMux()
-	userMux.HandleFunc("GET /me", app.h.GetMyProfile)
-	userMux.HandleFunc("GET /urls", app.h.GetUserURLS)
-	userMux.HandleFunc("GET /urls/{id}", app.h.GetURLById)
+	usersMux := http.NewServeMux()
+	urlsMux := http.NewServeMux()
+
+	// user related route
+	usersMux.HandleFunc("GET /me", app.h.GetMyProfileHandler)
+	usersMux.HandleFunc("GET /urls", app.h.GetUserURLSHandler)
+
+	urlsMux.HandleFunc("GET /{id}", app.h.GetURLByIdHandler)
+	urlsMux.HandleFunc("POST /", app.h.CreateURLHandler)
 
 	// Route grouping
 	mux.Handle("/v1/auth/", http.StripPrefix("/v1/auth", authMux))
-	mux.Handle("/v1/users/", http.StripPrefix("/v1/users", app.h.Protected(userMux)))
+	mux.Handle("/v1/users/", http.StripPrefix("/v1/users", app.h.Protected(usersMux)))
+	mux.Handle("/v1/urls/", http.StripPrefix("/v1/urls", app.h.Protected(urlsMux)))
 
 	var h http.Handler = mux
 	h = handlers.LogRequest(h)

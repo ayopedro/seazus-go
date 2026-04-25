@@ -18,5 +18,5 @@ type AuthService interface {
 
 type URLService interface {
 	GetURL(ctx context.Context, id, uID string) (*models.URL, error)
-	// CreateShortURL(ctx context.Context, payload *models.CreateURLPayload) (string, error)
+	CreateShortURL(ctx context.Context, payload *models.CreateURLPayload, uID string) (string, error)
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/ayopedro/seazus-go/internal/models"
 )
 
-func (h *handler) GetMyProfile(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetMyProfileHandler(w http.ResponseWriter, r *http.Request) {
 	user, _ := r.Context().Value(userContextKey).(*models.User)
 
 	response := types.APIResponseBody{

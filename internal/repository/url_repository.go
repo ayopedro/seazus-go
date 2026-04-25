@@ -3,11 +3,12 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"errors"
 
+	"github.com/ayopedro/seazus-go/internal/common"
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
 	"github.com/ayopedro/seazus-go/internal/logger"
 	"github.com/ayopedro/seazus-go/internal/models"
+	"github.com/google/uuid"
 )
 
 type urlRepository struct {
@@ -48,10 +49,7 @@ func (ur *urlRepository) GetOne(ctx context.Context, id, uID string) (*models.UR
 	)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, appErrors.ErrRecordNotFound
-		}
-		return nil, err
+		return nil, appErrors.MapPostgresError(err)
 	}
 	return url, nil
 }
@@ -75,7 +73,7 @@ func (ur *urlRepository) GetUserURLs(ctx context.Context, uID string) ([]models.
 	rows, err := ur.client.QueryContext(ctx, query, uID)
 	if err != nil {
 		logger.Error(err.Error())
-		return nil, appErrors.ErrInternalServerError
+		return nil, appErrors.ErrInternal
 	}
 	defer rows.Close()
 
@@ -92,14 +90,72 @@ func (ur *urlRepository) GetUserURLs(ctx context.Context, uID string) ([]models.
 			&url.UpdatedAt,
 		)
 		if err != nil {
-			return nil, appErrors.ErrInternalServerError
+			return nil, appErrors.MapPostgresError(err)
 		}
 		urls = append(urls, url)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, appErrors.ErrInternalServerError
+		return nil, appErrors.MapPostgresError(err)
 	}
 
 	return urls, nil
+}
+
+func (ur *urlRepository) CreateShortURL(ctx context.Context, payload *models.CreateURLPayload, uID string) (string, error) {
+	var existing string
+
+	err := ur.client.QueryRowContext(
+		ctx,
+		`SELECT short_url FROM urls WHERE user_id = $1 AND url_address = $2`,
+		uID,
+		payload.Url,
+	).Scan(&existing)
+
+	if err == nil {
+		return "", appErrors.ErrConflict
+	}
+
+	query := `
+		INSERT INTO urls (
+			id,
+			title,
+			description,
+			url_address,
+			short_url,
+			user_id
+		)
+		VALUES ($1, $2, $3, $4, $5, $6) 
+		RETURNING short_url
+	`
+
+	for range 5 {
+		short_url := common.RandStringRunes(7)
+		id, err := uuid.NewV7()
+		if err != nil {
+			return "", appErrors.ErrInternal
+		}
+
+		var result string
+		err = ur.client.QueryRowContext(
+			ctx,
+			query,
+			id,
+			payload.Identifier,
+			payload.Description,
+			payload.Url,
+			short_url,
+			uID,
+		).Scan(&result)
+
+		if appErrors.IsUniqueViolation(err) {
+			continue
+		}
+
+		if err == nil {
+			return result, nil
+		}
+		return "", appErrors.ErrInternal
+	}
+	return "", appErrors.ErrInternal
 }

@@ -16,6 +16,8 @@ var (
 	ErrConflict           = errors.New("resource already exists")
 	ErrForbidden          = errors.New("forbidden")
 	ErrTimeout            = errors.New("operation timed out")
+
+	ErrCreatingShortURL = errors.New("unable to shorten URL")
 )
 
 func MapPostgresError(err error) error {
@@ -30,4 +32,13 @@ func MapPostgresError(err error) error {
 		}
 	}
 	return err
+}
+
+func IsUniqueViolation(err error) bool {
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) {
+		return pqErr.Code == "23505"
+	}
+	return false
+
 }

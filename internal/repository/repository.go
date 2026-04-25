@@ -9,6 +9,7 @@ import (
 type URLRepository interface {
 	GetOne(ctx context.Context, id, uID string) (*models.URL, error)
 	GetUserURLs(ctx context.Context, uID string) ([]models.URL, error)
+	CreateShortURL(ctx context.Context, payload *models.CreateURLPayload, uID string) (string, error)
 }
 
 type UserRepository interface {
