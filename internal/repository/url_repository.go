@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
-	appErrors "github.com/ayopedro/seazus-go/internal/common"
+	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
 	"github.com/ayopedro/seazus-go/internal/models"
 )
 

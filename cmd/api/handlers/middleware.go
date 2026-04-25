@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	appErrors "github.com/ayopedro/seazus-go/internal/common"
+	utils "github.com/ayopedro/seazus-go/internal/common"
+	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
 	"github.com/ayopedro/seazus-go/internal/logger"
 	ratelimiter "github.com/ayopedro/seazus-go/internal/middleware"
-	"github.com/ayopedro/seazus-go/internal/utils"
 	"go.uber.org/zap"
 )
 

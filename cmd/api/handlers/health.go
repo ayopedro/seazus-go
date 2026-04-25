@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ayopedro/seazus-go/internal/types"
-	"github.com/ayopedro/seazus-go/internal/utils"
+	utils "github.com/ayopedro/seazus-go/internal/common"
+	"github.com/ayopedro/seazus-go/internal/common/types"
 )
 
 func (h *handler) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {

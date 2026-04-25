@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
+	utils "github.com/ayopedro/seazus-go/internal/common"
+	"github.com/ayopedro/seazus-go/internal/common/types"
 	"github.com/ayopedro/seazus-go/internal/logger"
-	"github.com/ayopedro/seazus-go/internal/types"
-	"github.com/ayopedro/seazus-go/internal/utils"
 	"go.uber.org/zap"
 )
 

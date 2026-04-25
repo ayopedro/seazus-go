@@ -5,10 +5,10 @@ import (
 	"errors"
 	"net/http"
 
-	appErrors "github.com/ayopedro/seazus-go/internal/common"
+	utils "github.com/ayopedro/seazus-go/internal/common"
+	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
+	"github.com/ayopedro/seazus-go/internal/common/types"
 	"github.com/ayopedro/seazus-go/internal/models"
-	"github.com/ayopedro/seazus-go/internal/types"
-	"github.com/ayopedro/seazus-go/internal/utils"
 )
 
 func (h *handler) LoginHandler(w http.ResponseWriter, r *http.Request) {

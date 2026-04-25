@@ -1,11 +1,11 @@
-package utils
+package common
 
 import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/ayopedro/seazus-go/internal/common/types"
 	"github.com/ayopedro/seazus-go/internal/logger"
-	"github.com/ayopedro/seazus-go/internal/types"
 	"go.uber.org/zap"
 )
 
