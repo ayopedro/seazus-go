@@ -22,6 +22,7 @@ type Handler interface {
 	RegisterHandler(w http.ResponseWriter, r *http.Request)
 	GetMyProfile(w http.ResponseWriter, r *http.Request)
 	GetURLById(w http.ResponseWriter, r *http.Request)
+	GetUserURLS(w http.ResponseWriter, r *http.Request)
 	HealthCheckHandler(w http.ResponseWriter, r *http.Request)
 
 	Protected(next http.Handler) http.Handler
@@ -36,7 +37,7 @@ func NewHandler(
 	urlr := repository.NewURLRepository(db)
 
 	// services
-	us := service.NewUserService(ur)
+	us := service.NewUserService(ur, urlr)
 	as := service.NewAuthService(ur, c.JWTSecret)
 	urls := service.NewURLService(urlr)
 

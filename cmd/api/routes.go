@@ -37,6 +37,7 @@ func (app *application) routes() http.Handler {
 	// protected route
 	userMux := http.NewServeMux()
 	userMux.HandleFunc("GET /me", app.h.GetMyProfile)
+	userMux.HandleFunc("GET /urls", app.h.GetUserURLS)
 	userMux.HandleFunc("GET /urls/{id}", app.h.GetURLById)
 
 	// Route grouping

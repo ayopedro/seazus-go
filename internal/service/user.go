@@ -9,19 +9,33 @@ import (
 )
 
 type userService struct {
-	repo repository.UserRepository
+	userRepo repository.UserRepository
+	urlRepo  repository.URLRepository
 }
 
-func NewUserService(repo repository.UserRepository) UserService {
-	return &userService{repo}
+func NewUserService(
+	userRepo repository.UserRepository,
+	urlRepo repository.URLRepository,
+) UserService {
+	return &userService{userRepo, urlRepo}
 }
 
 func (us *userService) GetUserProfile(ctx context.Context, uID string) (*models.User, error) {
-	user, err := us.repo.Get(ctx, uID)
+	user, err := us.userRepo.Get(ctx, uID)
 
 	if err != nil {
 		return nil, appErrors.ErrUserNotFound
 	}
 
 	return user, nil
+}
+
+func (us *userService) GetUserURLs(ctx context.Context, uID string) ([]models.URL, error) {
+	urls, err := us.urlRepo.GetUserURLs(ctx, uID)
+
+	if err != nil {
+		return nil, appErrors.ErrInternalServerError
+	}
+
+	return urls, err
 }

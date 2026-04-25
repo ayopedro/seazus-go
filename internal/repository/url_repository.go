@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
+	"github.com/ayopedro/seazus-go/internal/logger"
 	"github.com/ayopedro/seazus-go/internal/models"
 )
 
@@ -53,4 +54,52 @@ func (ur *urlRepository) GetOne(ctx context.Context, id, uID string) (*models.UR
 		return nil, err
 	}
 	return url, nil
+}
+
+func (ur *urlRepository) GetUserURLs(ctx context.Context, uID string) ([]models.URL, error) {
+	query := `
+		SELECT 
+			id, 
+			title, 
+			url_address, 
+			short_url, 
+			description, 
+			user_id,
+			created_at, 
+			updated_at 
+		FROM urls
+		WHERE  user_id = $1;
+	`
+	var urls []models.URL
+
+	rows, err := ur.client.QueryContext(ctx, query, uID)
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, appErrors.ErrInternalServerError
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		url := models.URL{}
+		err := rows.Scan(
+			&url.Id,
+			&url.Identifier,
+			&url.Url,
+			&url.ShortUrl,
+			&url.Description,
+			&url.UserID,
+			&url.CreatedAt,
+			&url.UpdatedAt,
+		)
+		if err != nil {
+			return nil, appErrors.ErrInternalServerError
+		}
+		urls = append(urls, url)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, appErrors.ErrInternalServerError
+	}
+
+	return urls, nil
 }

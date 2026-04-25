@@ -8,6 +8,7 @@ import (
 
 type URLRepository interface {
 	GetOne(ctx context.Context, id, uID string) (*models.URL, error)
+	GetUserURLs(ctx context.Context, uID string) ([]models.URL, error)
 }
 
 type UserRepository interface {

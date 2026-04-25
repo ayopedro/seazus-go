@@ -8,6 +8,7 @@ import (
 
 type UserService interface {
 	GetUserProfile(ctx context.Context, uID string) (*models.User, error)
+	GetUserURLs(ctx context.Context, uID string) ([]models.URL, error)
 }
 
 type AuthService interface {
