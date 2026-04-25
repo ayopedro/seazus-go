@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"github.com/ayopedro/seazus-go/internal/utils"
 )
 
-func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
+func (h *handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &models.LoginUserRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
@@ -26,7 +26,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authUser, err := h.AuthService.LoginUser(r.Context(), payload)
+	authUser, err := h.authService.LoginUser(r.Context(), payload)
 	if err != nil {
 		if errors.Is(err, models.ErrInvalidCredentials) {
 			utils.WriteError(w, r, http.StatusUnauthorized, err)
@@ -45,7 +45,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, r, http.StatusOK, response)
 }
 
-func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
+func (h *handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &models.CreateUserRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
@@ -61,7 +61,7 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.AuthService.CreateUser(r.Context(), payload)
+	err := h.authService.CreateUser(r.Context(), payload)
 
 	if err != nil {
 		if errors.Is(err, models.ErrDuplicateEmail) {

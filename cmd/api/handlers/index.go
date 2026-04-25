@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (h *Handler) IndexHandler(w http.ResponseWriter, r *http.Request) {
+func (h *handler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	response := types.APIResponseBody{
 		Status:  true,
 		Message: "Welcome to the Seazus(Go) API",

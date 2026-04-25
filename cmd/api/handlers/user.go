@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 	"github.com/ayopedro/seazus-go/internal/utils"
 )
 
-func (h *Handler) GetMyProfile(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetMyProfile(w http.ResponseWriter, r *http.Request) {
 	user, _ := r.Context().Value(userContextKey).(*models.User)
 
 	response := types.APIResponseBody{
@@ -21,10 +21,10 @@ func (h *Handler) GetMyProfile(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, r, http.StatusOK, response)
 }
 
-func (h *Handler) GetURLById(w http.ResponseWriter, r *http.Request) {
-	user, _ := r.Context().Value(userContextKey).(*models.User)
+func (h *handler) GetURLById(w http.ResponseWriter, r *http.Request) {
+	user_id, _ := r.Context().Value(userContextKey).(string)
 	id := r.PathValue("id")
-	url, err := h.URLService.GetURL(r.Context(), id, user.Id)
+	url, err := h.urlService.GetURL(r.Context(), id, user_id)
 
 	if err != nil {
 		if errors.Is(err, models.ErrRecordNotFound) {

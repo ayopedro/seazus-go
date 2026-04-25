@@ -8,15 +8,15 @@ import (
 	"github.com/ayopedro/seazus-go/internal/models"
 )
 
-type URLRepository struct {
+type urlRepository struct {
 	client *sql.DB
 }
 
-func NewURLRepository(c *sql.DB) *URLRepository {
-	return &URLRepository{c}
+func NewURLRepository(c *sql.DB) URLRepository {
+	return &urlRepository{c}
 }
 
-func (ur *URLRepository) GetOne(ctx context.Context, id, uID string) (*models.URL, error) {
+func (ur *urlRepository) GetOne(ctx context.Context, id, uID string) (*models.URL, error) {
 	query := `
 		SELECT 
 			id, 

@@ -14,11 +14,11 @@ import (
 )
 
 type authService struct {
-	repo      *repository.UserRepository
+	repo      repository.UserRepository
 	jwtSecret string
 }
 
-func NewAuthService(r *repository.UserRepository, jwtSecret string) *authService {
+func NewAuthService(r repository.UserRepository, jwtSecret string) AuthService {
 	return &authService{r, jwtSecret}
 }
 

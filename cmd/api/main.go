@@ -10,13 +10,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ayopedro/seazus-go/cmd/api/handlers"
 	"github.com/ayopedro/seazus-go/internal/config"
 	"github.com/ayopedro/seazus-go/internal/db"
-	"github.com/ayopedro/seazus-go/internal/handler"
 	"github.com/ayopedro/seazus-go/internal/logger"
 	ratelimiter "github.com/ayopedro/seazus-go/internal/middleware"
-	"github.com/ayopedro/seazus-go/internal/repository"
-	"github.com/ayopedro/seazus-go/internal/service"
 	"go.uber.org/zap"
 )
 
@@ -86,21 +84,7 @@ func main() {
 	defer db.Close()
 	logger.Info("Database is connected")
 
-	// repositories
-	ur := repository.NewUserRepository(db)
-	urlr := repository.NewURLRepository(db)
-
-	// services
-	us := service.NewUserService(ur)
-	as := service.NewAuthService(ur, cfg.JWTSecret)
-	urls := service.NewURLService(urlr)
-
-	h := &handler.Handler{
-		AppConfig:   cfg,
-		UserService: us,
-		AuthService: as,
-		URLService:  urls,
-	}
+	h := handlers.NewHandler(cfg, db)
 
 	app := &application{
 		config:  cfg,

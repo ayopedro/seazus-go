@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/ayopedro/seazus-go/cmd/api/handlers"
 	"github.com/ayopedro/seazus-go/internal/config"
-	"github.com/ayopedro/seazus-go/internal/handler"
 	ratelimiter "github.com/ayopedro/seazus-go/internal/middleware"
 )
 
@@ -15,7 +15,7 @@ type application struct {
 	db      *sql.DB
 	limiter ratelimiter.Limiter
 	wg      sync.WaitGroup
-	h       *handler.Handler
+	h       handlers.Handler
 }
 
 func (app *application) routes() http.Handler {
@@ -44,11 +44,11 @@ func (app *application) routes() http.Handler {
 	mux.Handle("/v1/users/", http.StripPrefix("/v1/users", app.h.Protected(userMux)))
 
 	var h http.Handler = mux
-	h = handler.LogRequest(h)
-	h = handler.CORS(app.config.TrustedOrigins)(h)
+	h = handlers.LogRequest(h)
+	h = handlers.CORS(app.config.TrustedOrigins)(h)
 	if app.config.AppEnv == "production" {
-		h = handler.RateLimiter(app.limiter)(h)
+		h = handlers.RateLimiter(app.limiter)(h)
 	}
-	h = handler.RecoverPanic(h)
+	h = handlers.RecoverPanic(h)
 	return h
 }

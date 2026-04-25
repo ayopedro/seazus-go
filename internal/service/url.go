@@ -8,10 +8,10 @@ import (
 )
 
 type urlService struct {
-	repo *repository.URLRepository
+	repo repository.URLRepository
 }
 
-func NewURLService(r *repository.URLRepository) *urlService {
+func NewURLService(r repository.URLRepository) *urlService {
 	return &urlService{r}
 }
 

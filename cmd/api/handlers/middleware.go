@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"context"
@@ -113,7 +113,7 @@ func CORS(trustedOrigins []string) func(http.Handler) http.Handler {
 	}
 }
 
-func (h *Handler) Protected(next http.Handler) http.Handler {
+func (h *handler) Protected(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
@@ -127,13 +127,13 @@ func (h *Handler) Protected(next http.Handler) http.Handler {
 			return
 		}
 
-		claims, err := utils.ValidateToken(parts[1], h.AppConfig.JWTSecret)
+		claims, err := utils.ValidateToken(parts[1], h.config.JWTSecret)
 		if err != nil {
 			utils.WriteError(w, r, http.StatusUnauthorized, models.ErrInvalidToken)
 			return
 		}
 
-		user, err := h.UserService.GetUserProfile(r.Context(), claims.UserID)
+		user, err := h.userService.GetUserProfile(r.Context(), claims.UserID)
 		if err != nil {
 			if errors.Is(err, models.ErrUserNotFound) {
 				utils.WriteError(w, r, http.StatusUnauthorized, models.ErrUserNotFound)
@@ -143,7 +143,7 @@ func (h *Handler) Protected(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), userContextKey, user)
+		ctx := context.WithValue(r.Context(), userContextKey, user.Id)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

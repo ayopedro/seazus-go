@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"net/http"
@@ -8,13 +8,13 @@ import (
 	"github.com/ayopedro/seazus-go/internal/utils"
 )
 
-func (h *Handler) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+func (h *handler) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	response := types.APIResponseBody{
 		Status:  true,
 		Message: "Server is healthy",
 		Data: map[string]string{
 			"status":      "available",
-			"environment": h.AppConfig.AppEnv,
+			"environment": h.config.AppEnv,
 			"time":        time.Now().String(),
 		},
 	}
