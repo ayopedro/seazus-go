@@ -24,7 +24,7 @@ func (h *handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authUser, err := h.authService.LoginUser(r.Context(), payload)
+	authUser, err := h.authService.LoginUser(w, r.Context(), payload)
 	if err != nil {
 		if errors.Is(err, appErrors.ErrInvalidCredentials) {
 			utils.WriteError(w, r, http.StatusUnauthorized, err)

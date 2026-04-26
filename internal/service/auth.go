@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"net/http"
 	"strings"
 	"time"
 
@@ -44,7 +45,7 @@ func (as *authService) CreateUser(ctx context.Context, u *models.CreateUserReque
 	return err
 }
 
-func (as *authService) LoginUser(ctx context.Context, p *models.LoginUserRequest) (*models.AuthResponse, error) {
+func (as *authService) LoginUser(w http.ResponseWriter, ctx context.Context, p *models.LoginUserRequest) (*models.AuthResponse, error) {
 	user, err := as.repo.GetWithEmail(ctx, p.Email)
 	if err != nil {
 		if errors.Is(err, appErrors.ErrNotFound) {
@@ -72,5 +73,18 @@ func (as *authService) LoginUser(ctx context.Context, p *models.LoginUserRequest
 		Token: token,
 	}
 
+	setCookie(w, "auth_token", token, time.Now().Add(1*time.Hour))
+
 	return response, nil
+}
+
+func setCookie(w http.ResponseWriter, name, value string, expires time.Time) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     name,
+		Value:    value,
+		Expires:  expires,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	})
 }

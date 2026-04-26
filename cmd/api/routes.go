@@ -1,9 +1,7 @@
 package main
 
 import (
-	"database/sql"
 	"net/http"
-	"sync"
 
 	"github.com/ayopedro/seazus-go/cmd/api/handlers"
 	"github.com/ayopedro/seazus-go/internal/config"
@@ -13,7 +11,6 @@ import (
 type application struct {
 	config  *config.Config
 	limiter ratelimiter.Limiter
-	wg      sync.WaitGroup
 	h       handlers.Handler
 }
 

@@ -115,19 +115,26 @@ func CORS(trustedOrigins []string) func(http.Handler) http.Handler {
 
 func (h *handler) Protected(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
+		var token string
+
+		if cookie, err := r.Cookie("auth_token"); err == nil {
+			token = cookie.Value
+		}
+
+		if token == "" {
+			authHeader := r.Header.Get("Authorization")
+
+			if authToken, ok := strings.CutPrefix(authHeader, "Bearer "); ok {
+				token = authToken
+			}
+		}
+
+		if token == "" {
 			utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrInvalidToken)
 			return
 		}
 
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrInvalidToken)
-			return
-		}
-
-		claims, err := utils.ValidateToken(parts[1], h.config.JWTSecret)
+		claims, err := utils.ValidateToken(token, h.config.JWTSecret)
 		if err != nil {
 			utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrInvalidToken)
 			return

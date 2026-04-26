@@ -5,11 +5,16 @@ import (
 
 	utils "github.com/ayopedro/seazus-go/internal/common"
 	"github.com/ayopedro/seazus-go/internal/common/types"
-	"github.com/ayopedro/seazus-go/internal/models"
 )
 
 func (h *handler) GetMyProfileHandler(w http.ResponseWriter, r *http.Request) {
-	user, _ := r.Context().Value(userContextKey).(*models.User)
+	userID, _ := r.Context().Value(userContextKey).(string)
+
+	user, err := h.userService.GetUserProfile(r.Context(), userID)
+	if err != nil {
+		utils.WriteError(w, r, http.StatusNotFound, err)
+		return
+	}
 
 	response := types.APIResponseBody{
 		Status:  true,
