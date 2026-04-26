@@ -88,7 +88,6 @@ func main() {
 
 	app := &application{
 		config:  cfg,
-		db:      db,
 		limiter: limiter,
 		h:       h,
 	}
