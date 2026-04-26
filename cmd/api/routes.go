@@ -12,7 +12,6 @@ import (
 
 type application struct {
 	config  *config.Config
-	db      *sql.DB
 	limiter ratelimiter.Limiter
 	wg      sync.WaitGroup
 	h       handlers.Handler
