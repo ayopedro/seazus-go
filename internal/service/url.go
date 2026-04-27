@@ -7,14 +7,16 @@ import (
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/ayopedro/seazus-go/internal/repository"
+	"go.uber.org/zap"
 )
 
 type urlService struct {
-	repo repository.URLRepository
+	repo   repository.URLRepository
+	logger *zap.Logger
 }
 
-func NewURLService(r repository.URLRepository) *urlService {
-	return &urlService{r}
+func NewURLService(r repository.URLRepository, logger *zap.Logger) *urlService {
+	return &urlService{r, logger}
 }
 
 func (us *urlService) GetURL(ctx context.Context, id, uID string) (*models.URL, error) {

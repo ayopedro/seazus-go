@@ -7,6 +7,7 @@ import (
 	"github.com/ayopedro/seazus-go/internal/config"
 	"github.com/ayopedro/seazus-go/internal/repository"
 	"github.com/ayopedro/seazus-go/internal/service"
+	"go.uber.org/zap"
 )
 
 type handler struct {
@@ -32,15 +33,16 @@ type Handler interface {
 func NewHandler(
 	c *config.Config,
 	db *sql.DB,
+	l *zap.Logger,
 ) Handler {
 	// repositories
-	ur := repository.NewUserRepository(db)
-	urlr := repository.NewURLRepository(db)
+	ur := repository.NewUserRepository(db, l)
+	urlr := repository.NewURLRepository(db, l)
 
 	// services
-	us := service.NewUserService(ur, urlr)
-	as := service.NewAuthService(ur, c.JWTSecret)
-	urls := service.NewURLService(urlr)
+	us := service.NewUserService(ur, urlr, l)
+	as := service.NewAuthService(ur, c.JWTSecret, l)
+	urls := service.NewURLService(urlr, l)
 
 	return &handler{
 		config:      c,

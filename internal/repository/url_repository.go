@@ -6,17 +6,18 @@ import (
 
 	"github.com/ayopedro/seazus-go/internal/common"
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
-	"github.com/ayopedro/seazus-go/internal/logger"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type urlRepository struct {
 	client *sql.DB
+	logger *zap.Logger
 }
 
-func NewURLRepository(c *sql.DB) URLRepository {
-	return &urlRepository{c}
+func NewURLRepository(c *sql.DB, l *zap.Logger) URLRepository {
+	return &urlRepository{c, l}
 }
 
 func (ur *urlRepository) GetOne(ctx context.Context, id, uID string) (*models.URL, error) {
@@ -72,7 +73,9 @@ func (ur *urlRepository) GetUserURLs(ctx context.Context, uID string) ([]models.
 
 	rows, err := ur.client.QueryContext(ctx, query, uID)
 	if err != nil {
-		logger.Error(err.Error())
+		if ur.logger != nil {
+			ur.logger.Error("failed to query user URLs", zap.Error(err))
+		}
 		return nil, appErrors.ErrInternal
 	}
 	defer rows.Close()

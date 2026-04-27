@@ -8,19 +8,20 @@ import (
 
 	utils "github.com/ayopedro/seazus-go/internal/common"
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
-	"github.com/ayopedro/seazus-go/internal/logger"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/ayopedro/seazus-go/internal/repository"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type authService struct {
 	repo      repository.UserRepository
 	jwtSecret string
+	logger    *zap.Logger
 }
 
-func NewAuthService(r repository.UserRepository, jwtSecret string) AuthService {
-	return &authService{r, jwtSecret}
+func NewAuthService(r repository.UserRepository, jwtSecret string, logger *zap.Logger) AuthService {
+	return &authService{r, jwtSecret, logger}
 }
 
 func (as *authService) CreateUser(ctx context.Context, u *models.CreateUserRequest) error {
@@ -28,7 +29,9 @@ func (as *authService) CreateUser(ctx context.Context, u *models.CreateUserReque
 
 	hash, err := utils.HashPassword(u.Password)
 	if err != nil {
-		logger.Error("Error hashing password")
+		if as.logger != nil {
+			as.logger.Error("Error hashing password", zap.Error(err))
+		}
 		return appErrors.ErrInternal
 	}
 

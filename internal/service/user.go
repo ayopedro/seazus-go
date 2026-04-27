@@ -6,18 +6,21 @@ import (
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/ayopedro/seazus-go/internal/repository"
+	"go.uber.org/zap"
 )
 
 type userService struct {
 	userRepo repository.UserRepository
 	urlRepo  repository.URLRepository
+	logger   *zap.Logger
 }
 
 func NewUserService(
 	userRepo repository.UserRepository,
 	urlRepo repository.URLRepository,
+	logger *zap.Logger,
 ) UserService {
-	return &userService{userRepo, urlRepo}
+	return &userService{userRepo, urlRepo, logger}
 }
 
 func (us *userService) GetUserProfile(ctx context.Context, uID string) (*models.User, error) {

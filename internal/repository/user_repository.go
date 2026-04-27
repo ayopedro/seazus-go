@@ -7,14 +7,16 @@ import (
 
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
 	"github.com/ayopedro/seazus-go/internal/models"
+	"go.uber.org/zap"
 )
 
 type userRepository struct {
 	client *sql.DB
+	logger *zap.Logger
 }
 
-func NewUserRepository(c *sql.DB) UserRepository {
-	return &userRepository{c}
+func NewUserRepository(c *sql.DB, logger *zap.Logger) UserRepository {
+	return &userRepository{client: c, logger: logger}
 }
 
 func (ur *userRepository) Create(ctx context.Context, u *models.User) error {

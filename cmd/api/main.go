@@ -69,8 +69,12 @@ func runServer(srv *http.Server) {
 
 func main() {
 	cfg := config.Load()
-	logger.Init(cfg.AppEnv)
+	if err := logger.Init(cfg.AppEnv); err != nil {
+		panic(err)
+	}
 	defer logger.Sync()
+
+	appLogger := logger.Std().Logger
 
 	limiter := ratelimiter.NewFixedWindowRateLimiter(
 		cfg.Limiter.RequestsPerTimeframe,
@@ -84,7 +88,7 @@ func main() {
 	defer db.Close()
 	logger.Info("Database is connected")
 
-	h := handlers.NewHandler(cfg, db)
+	h := handlers.NewHandler(cfg, db, appLogger)
 
 	app := &application{
 		config:  cfg,

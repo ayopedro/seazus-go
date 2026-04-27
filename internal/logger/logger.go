@@ -1,36 +1,106 @@
 package logger
 
 import (
+	"context"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-var log *zap.Logger
+type Logger struct {
+	*zap.Logger
+}
 
-func Init(env string) {
-	var config zap.Config
+type contextKey struct{}
+
+var (
+	globalLogger *Logger
+	loggerKey    = &contextKey{}
+)
+
+func Init(env string) error {
+	l, err := New(env)
+	if err != nil {
+		return err
+	}
+	globalLogger = l
+	return nil
+}
+
+func Std() *Logger {
+	return globalLogger
+}
+
+func Sync() error {
+	if globalLogger == nil {
+		return nil
+	}
+	return globalLogger.Sync()
+}
+
+func NewContext(ctx context.Context, l *Logger) context.Context {
+	return context.WithValue(ctx, loggerKey, l)
+}
+
+func FromContext(ctx context.Context) *Logger {
+	if ctx == nil {
+		return globalLogger
+	}
+	if l, ok := ctx.Value(loggerKey).(*Logger); ok && l != nil {
+		return l
+	}
+	return globalLogger
+}
+
+func New(env string) (*Logger, error) {
+	var cfg zap.Config
 
 	if env == "production" {
-		config = zap.NewProductionConfig()
-		config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+		cfg = zap.NewProductionConfig()
+		cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	} else {
-		config = zap.NewDevelopmentConfig()
-		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		cfg = zap.NewDevelopmentConfig()
+		cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	}
 
-	var err error
-	log, err = config.Build(zap.AddCallerSkip(1))
+	l, err := cfg.Build(zap.AddCallerSkip(1))
 	if err != nil {
-		panic(err)
+		return nil, err
+	}
+
+	return &Logger{Logger: l}, nil
+}
+
+func (l *Logger) With(fields ...zap.Field) *Logger {
+	return &Logger{Logger: l.Logger.With(fields...)}
+}
+
+func Debug(msg string, fields ...zap.Field) {
+	if globalLogger != nil {
+		globalLogger.Debug(msg, fields...)
 	}
 }
 
-func Info(msg string, fields ...zap.Field)  { log.Info(msg, fields...) }
-func Error(msg string, fields ...zap.Field) { log.Error(msg, fields...) }
-func Debug(msg string, fields ...zap.Field) { log.Debug(msg, fields...) }
-func Warn(msg string, fields ...zap.Field)  { log.Warn(msg, fields...) }
-func Fatal(msg string, fields ...zap.Field) { log.Fatal(msg, fields...) }
+func Info(msg string, fields ...zap.Field) {
+	if globalLogger != nil {
+		globalLogger.Info(msg, fields...)
+	}
+}
 
-func Sync() error {
-	return log.Sync()
+func Warn(msg string, fields ...zap.Field) {
+	if globalLogger != nil {
+		globalLogger.Warn(msg, fields...)
+	}
+}
+
+func Error(msg string, fields ...zap.Field) {
+	if globalLogger != nil {
+		globalLogger.Error(msg, fields...)
+	}
+}
+
+func Fatal(msg string, fields ...zap.Field) {
+	if globalLogger != nil {
+		globalLogger.Fatal(msg, fields...)
+	}
 }
