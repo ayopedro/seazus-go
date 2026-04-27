@@ -20,7 +20,7 @@ A minimal URL shortener API written in Go.
 - Application-level rate limiting
 - Structured JSON API responses
 
-> **NOTE**
+> [!NOTE]
 > This is still a work in progress and you are welcome to share suggestions on what could be improved on as this is my first shot at building an API with Go.
 
 ## Repository layout
