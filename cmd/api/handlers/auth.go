@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
 
 	utils "github.com/ayopedro/seazus-go/internal/common"
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
@@ -24,7 +25,7 @@ func (h *handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authUser, err := h.authService.LoginUser(w, r.Context(), payload)
+	authUser, err := h.authService.LoginUser(r.Context(), payload)
 	if err != nil {
 		if errors.Is(err, appErrors.ErrInvalidCredentials) {
 			utils.WriteError(w, r, http.StatusUnauthorized, err)
@@ -34,6 +35,8 @@ func (h *handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setCookie(w, "auth_token", authUser.Token, time.Now().Add(1*time.Hour))
+
 	response := types.APIResponseBody{
 		Status:  true,
 		Message: "Login successful",
@@ -41,6 +44,17 @@ func (h *handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJSON(w, r, http.StatusOK, response)
+}
+
+func setCookie(w http.ResponseWriter, name, value string, expires time.Time) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     name,
+		Value:    value,
+		Expires:  expires,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	})
 }
 
 func (h *handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
