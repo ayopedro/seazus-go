@@ -5,6 +5,7 @@ import (
 
 	"github.com/ayopedro/seazus-go/cmd/api/handlers"
 	"github.com/ayopedro/seazus-go/internal/config"
+	"github.com/ayopedro/seazus-go/internal/middleware"
 	ratelimiter "github.com/ayopedro/seazus-go/internal/middleware"
 )
 
@@ -47,11 +48,11 @@ func (app *application) routes() http.Handler {
 	mux.Handle("/v1/urls/", http.StripPrefix("/v1/urls", app.h.Protected(urlsMux)))
 
 	var h http.Handler = mux
-	h = handlers.LogRequest(h)
-	h = handlers.CORS(app.config.TrustedOrigins)(h)
+	h = middleware.RequestLogger(h)
+	h = middleware.CORS(app.config.TrustedOrigins)(h)
 	if app.config.AppEnv == "production" {
-		h = handlers.RateLimiter(app.limiter)(h)
+		h = middleware.RateLimiter(app.limiter)(h)
 	}
-	h = handlers.RecoverPanic(h)
+	h = middleware.RecoverPanic(h)
 	return h
 }

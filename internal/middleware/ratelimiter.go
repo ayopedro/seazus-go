@@ -1,8 +1,15 @@
-package ratelimiter
+package middleware
 
 import (
+	"errors"
+	"fmt"
+	"net"
+	"net/http"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/ayopedro/seazus-go/internal/common"
 )
 
 type Limiter interface {
@@ -26,18 +33,18 @@ func NewFixedWindowRateLimiter(limits int, window time.Duration) *FixedWindowRat
 
 func (rl *FixedWindowRateLimiter) Allow(ip string) (bool, time.Duration) {
 	rl.Lock()
+	defer rl.Unlock()
 	count, exists := rl.clients[ip]
-	rl.Unlock()
 
 	if !exists || count < rl.limits {
 		rl.Lock()
+		defer rl.Unlock()
 		if !exists {
 			rl.clients[ip] = 0
 			go rl.resetCount(ip)
 		}
 
 		rl.clients[ip]++
-		rl.Unlock()
 		return true, 0
 	}
 
@@ -47,6 +54,31 @@ func (rl *FixedWindowRateLimiter) Allow(ip string) (bool, time.Duration) {
 func (rl *FixedWindowRateLimiter) resetCount(ip string) {
 	time.Sleep(rl.window)
 	rl.Lock()
+	defer rl.Unlock()
 	delete(rl.clients, ip)
-	rl.Unlock()
+}
+
+func RateLimiter(l Limiter) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ip := r.RemoteAddr
+
+			if host, _, err := net.SplitHostPort(ip); err != nil {
+				ip = host
+			}
+
+			if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+				ips := strings.Split(xff, ",")
+				ip = strings.TrimSpace(ips[0])
+			}
+
+			if allow, retryAfter := l.Allow(ip); !allow {
+				w.Header().Set("Retry-After", fmt.Sprintf("%.f", retryAfter.Seconds()))
+				common.WriteError(w, r, http.StatusTooManyRequests, errors.New(http.StatusText(429)))
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }
