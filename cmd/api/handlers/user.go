@@ -12,7 +12,7 @@ func (h *handler) GetMyProfileHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.userService.GetUserProfile(r.Context(), userID)
 	if err != nil {
-		utils.WriteError(w, r, http.StatusNotFound, err)
+		utils.WriteError(w, r, err)
 		return
 	}
 

@@ -20,9 +20,9 @@ func (h *handler) GetURLByIdHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, appErrors.ErrNotFound) {
-			utils.WriteError(w, r, http.StatusNotFound, err)
+			utils.WriteError(w, r, err)
 		}
-		utils.WriteError(w, r, http.StatusInternalServerError, err)
+		utils.WriteError(w, r, err)
 	}
 
 	response := types.APIResponseBody{
@@ -39,7 +39,7 @@ func (h *handler) GetUserURLSHandler(w http.ResponseWriter, r *http.Request) {
 	urls, err := h.userService.GetUserURLs(r.Context(), user_id)
 
 	if err != nil {
-		utils.WriteError(w, r, http.StatusInternalServerError, err)
+		utils.WriteError(w, r, err)
 	}
 
 	response := types.APIResponseBody{
@@ -55,12 +55,12 @@ func (h *handler) CreateURLHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &models.CreateURLPayload{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		utils.WriteError(w, r, http.StatusBadRequest, appErrors.ErrInvalidInput)
+		utils.WriteError(w, r, appErrors.ErrInvalidInput)
 		return
 	}
 
 	if payload.Identifier == "" || payload.Url == "" {
-		utils.WriteError(w, r, http.StatusBadRequest, appErrors.ErrInvalidInput)
+		utils.WriteError(w, r, appErrors.ErrInvalidInput)
 		return
 	}
 
@@ -70,10 +70,10 @@ func (h *handler) CreateURLHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error("Error creating short URL", zap.String("err", err.Error()))
 		if errors.Is(err, appErrors.ErrConflict) {
-			utils.WriteError(w, r, http.StatusConflict, err)
+			utils.WriteError(w, r, err)
 			return
 		}
-		utils.WriteError(w, r, http.StatusInternalServerError, err)
+		utils.WriteError(w, r, err)
 		return
 	}
 

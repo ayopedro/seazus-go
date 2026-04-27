@@ -19,6 +19,6 @@ func (h *handler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	err := utils.WriteJSON(w, r, http.StatusOK, response)
 	if err != nil {
 		logger.Error("json encoding failed", zap.Error(err))
-		utils.WriteError(w, r, http.StatusInternalServerError, err)
+		utils.WriteError(w, r, err)
 	}
 }

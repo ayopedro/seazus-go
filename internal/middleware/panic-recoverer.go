@@ -23,7 +23,6 @@ func RecoverPanic(next http.Handler) http.Handler {
 				common.WriteError(
 					w,
 					r,
-					http.StatusInternalServerError,
 					errors.New(http.StatusText(http.StatusInternalServerError)),
 				)
 			}

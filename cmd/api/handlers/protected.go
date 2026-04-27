@@ -31,22 +31,22 @@ func (h *handler) Protected(next http.Handler) http.Handler {
 		}
 
 		if token == "" {
-			utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrInvalidToken)
+			utils.WriteError(w, r, appErrors.ErrInvalidToken)
 			return
 		}
 
 		claims, err := utils.ValidateToken(token, h.config.JWTSecret)
 		if err != nil {
-			utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrInvalidToken)
+			utils.WriteError(w, r, appErrors.ErrInvalidToken)
 			return
 		}
 
 		user, err := h.userService.GetUserProfile(r.Context(), claims.UserID)
 		if err != nil {
 			if errors.Is(err, appErrors.ErrNotFound) {
-				utils.WriteError(w, r, http.StatusUnauthorized, appErrors.ErrNotFound)
+				utils.WriteError(w, r, appErrors.ErrNotFound)
 			} else {
-				utils.WriteError(w, r, http.StatusInternalServerError, appErrors.ErrForbidden)
+				utils.WriteError(w, r, appErrors.ErrForbidden)
 			}
 			return
 		}

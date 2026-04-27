@@ -1,7 +1,9 @@
 package appErrors
 
 import (
+	"database/sql"
 	"errors"
+	"net/http"
 
 	"github.com/lib/pq"
 )
@@ -21,6 +23,10 @@ var (
 )
 
 func MapPostgresError(err error) error {
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrNotFound
+	}
+
 	if pqErr, ok := err.(*pq.Error); ok {
 		switch pqErr.Code {
 		case "23505":
@@ -31,7 +37,31 @@ func MapPostgresError(err error) error {
 			return ErrInternal
 		}
 	}
+
 	return err
+}
+
+func StatusCode(err error) int {
+	switch {
+	case errors.Is(err, ErrInvalidInput):
+		return http.StatusBadRequest
+	case errors.Is(err, ErrInvalidCredentials),
+		errors.Is(err, ErrUnauthorized),
+		errors.Is(err, ErrInvalidToken):
+		return http.StatusUnauthorized
+	case errors.Is(err, ErrForbidden):
+		return http.StatusForbidden
+	case errors.Is(err, ErrNotFound):
+		return http.StatusNotFound
+	case errors.Is(err, ErrConflict):
+		return http.StatusConflict
+	case errors.Is(err, ErrTimeout):
+		return http.StatusRequestTimeout
+	case errors.Is(err, ErrInternal):
+		return http.StatusInternalServerError
+	default:
+		return http.StatusInternalServerError
+	}
 }
 
 func IsUniqueViolation(err error) bool {

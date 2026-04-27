@@ -16,22 +16,22 @@ func (h *handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &models.LoginUserRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		utils.WriteError(w, r, http.StatusBadRequest, appErrors.ErrInvalidInput)
+		utils.WriteError(w, r, appErrors.ErrInvalidInput)
 		return
 	}
 
 	if payload.Email == "" || payload.Password == "" {
-		utils.WriteError(w, r, http.StatusBadRequest, appErrors.ErrInvalidInput)
+		utils.WriteError(w, r, appErrors.ErrInvalidInput)
 		return
 	}
 
 	authUser, err := h.authService.LoginUser(r.Context(), payload)
 	if err != nil {
 		if errors.Is(err, appErrors.ErrInvalidCredentials) {
-			utils.WriteError(w, r, http.StatusUnauthorized, err)
+			utils.WriteError(w, r, err)
 			return
 		}
-		utils.WriteError(w, r, http.StatusInternalServerError, err)
+		utils.WriteError(w, r, err)
 		return
 	}
 
@@ -61,15 +61,12 @@ func (h *handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &models.CreateUserRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		utils.WriteError(w, r, http.StatusBadRequest, appErrors.ErrInvalidInput)
+		utils.WriteError(w, r, appErrors.ErrInvalidInput)
 		return
 	}
 
 	if payload.Email == "" || payload.Password == "" {
-		utils.WriteJSON(w, r, http.StatusBadRequest, types.APIResponseBody{
-			Status:  false,
-			Message: "email and password are required",
-		})
+		utils.WriteError(w, r, appErrors.ErrInvalidInput)
 		return
 	}
 
@@ -77,10 +74,10 @@ func (h *handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, appErrors.ErrConflict) {
-			utils.WriteError(w, r, http.StatusConflict, err)
+			utils.WriteError(w, r, err)
 			return
 		}
-		utils.WriteError(w, r, http.StatusInternalServerError, err)
+		utils.WriteError(w, r, err)
 		return
 	}
 	response := types.APIResponseBody{
