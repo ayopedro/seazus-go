@@ -11,10 +11,8 @@ import (
 )
 
 type handler struct {
-	config      *config.Config
-	authService service.AuthService
-	userService service.UserService
-	urlService  service.URLService
+	config  *config.Config
+	service *service.Service
 }
 
 type Handler interface {
@@ -30,24 +28,15 @@ type Handler interface {
 	Protected(next http.Handler) http.Handler
 }
 
-func NewHandler(
-	c *config.Config,
-	db *sql.DB,
-	l *zap.Logger,
-) Handler {
+func NewHandler(cfg *config.Config, db *sql.DB, logger *zap.Logger) Handler {
 	// repositories
-	ur := repository.NewUserRepository(db, l)
-	urlr := repository.NewURLRepository(db, l)
+	repo := repository.NewRepository(db, logger)
 
 	// services
-	us := service.NewUserService(ur, urlr, l)
-	as := service.NewAuthService(ur, c.JWTSecret, l)
-	urls := service.NewURLService(urlr, l)
+	s := service.NewService(repo, logger, cfg.JWTSecret)
 
 	return &handler{
-		config:      c,
-		authService: as,
-		userService: us,
-		urlService:  urls,
+		config:  cfg,
+		service: s,
 	}
 }

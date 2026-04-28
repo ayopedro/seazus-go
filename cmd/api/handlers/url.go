@@ -16,7 +16,7 @@ import (
 func (h *handler) GetURLByIdHandler(w http.ResponseWriter, r *http.Request) {
 	user_id, _ := r.Context().Value(userContextKey).(string)
 	id := r.PathValue("id")
-	url, err := h.urlService.GetURL(r.Context(), id, user_id)
+	url, err := h.service.URL.GetURL(r.Context(), id, user_id)
 
 	if err != nil {
 		if errors.Is(err, appErrors.ErrNotFound) {
@@ -36,7 +36,7 @@ func (h *handler) GetURLByIdHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) GetUserURLSHandler(w http.ResponseWriter, r *http.Request) {
 	user_id, _ := r.Context().Value(userContextKey).(string)
-	urls, err := h.userService.GetUserURLs(r.Context(), user_id)
+	urls, err := h.service.User.GetUserURLs(r.Context(), user_id)
 
 	if err != nil {
 		utils.WriteError(w, r, err)
@@ -65,7 +65,7 @@ func (h *handler) CreateURLHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user_id, _ := r.Context().Value(userContextKey).(string)
-	short_url, err := h.urlService.CreateShortURL(r.Context(), payload, user_id)
+	short_url, err := h.service.URL.CreateShortURL(r.Context(), payload, user_id)
 
 	if err != nil {
 		logger.Error("Error creating short URL", zap.String("err", err.Error()))

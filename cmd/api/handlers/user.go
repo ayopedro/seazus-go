@@ -10,7 +10,7 @@ import (
 func (h *handler) GetMyProfileHandler(w http.ResponseWriter, r *http.Request) {
 	userID, _ := r.Context().Value(userContextKey).(string)
 
-	user, err := h.userService.GetUserProfile(r.Context(), userID)
+	user, err := h.service.User.GetUserProfile(r.Context(), userID)
 	if err != nil {
 		utils.WriteError(w, r, err)
 		return

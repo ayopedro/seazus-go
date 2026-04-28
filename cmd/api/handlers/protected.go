@@ -41,7 +41,7 @@ func (h *handler) Protected(next http.Handler) http.Handler {
 			return
 		}
 
-		user, err := h.userService.GetUserProfile(r.Context(), claims.UserID)
+		user, err := h.service.User.GetUserProfile(r.Context(), claims.UserID)
 		if err != nil {
 			if errors.Is(err, appErrors.ErrNotFound) {
 				utils.WriteError(w, r, appErrors.ErrNotFound)

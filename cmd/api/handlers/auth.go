@@ -25,7 +25,7 @@ func (h *handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authUser, err := h.authService.LoginUser(r.Context(), payload)
+	authUser, err := h.service.Auth.LoginUser(r.Context(), payload)
 	if err != nil {
 		if errors.Is(err, appErrors.ErrInvalidCredentials) {
 			utils.WriteError(w, r, err)
@@ -70,7 +70,7 @@ func (h *handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.authService.CreateUser(r.Context(), payload)
+	err := h.service.Auth.CreateUser(r.Context(), payload)
 
 	if err != nil {
 		if errors.Is(err, appErrors.ErrConflict) {
