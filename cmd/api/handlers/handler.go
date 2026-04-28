@@ -17,6 +17,7 @@ type handler struct {
 
 type Handler interface {
 	IndexHandler(w http.ResponseWriter, r *http.Request)
+	ShortURLRedirectHandler(w http.ResponseWriter, r *http.Request)
 	LoginHandler(w http.ResponseWriter, r *http.Request)
 	RegisterHandler(w http.ResponseWriter, r *http.Request)
 	GetMyProfileHandler(w http.ResponseWriter, r *http.Request)
@@ -24,6 +25,7 @@ type Handler interface {
 	GetUserURLSHandler(w http.ResponseWriter, r *http.Request)
 	HealthCheckHandler(w http.ResponseWriter, r *http.Request)
 	CreateURLHandler(w http.ResponseWriter, r *http.Request)
+	NotFoundHandler(w http.ResponseWriter, r *http.Request)
 
 	Protected(next http.Handler) http.Handler
 }

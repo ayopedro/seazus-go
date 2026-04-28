@@ -29,6 +29,16 @@ func (us *urlService) GetURL(ctx context.Context, id, uID string) (*models.URL, 
 	return url, nil
 }
 
+func (us *urlService) GetOriginalURL(ctx context.Context, short_url string) (string, error) {
+	original, err := us.repo.GetOriginalURL(ctx, short_url)
+
+	if err != nil {
+		return "", appErrors.ErrNotFound
+	}
+
+	return original, nil
+}
+
 func (us *urlService) CreateShortURL(ctx context.Context, payload *models.CreateURLPayload, uID string) (string, error) {
 	url := &models.CreateURLPayload{
 		Identifier:  payload.Identifier,

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/ayopedro/seazus-go/internal/common"
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
@@ -18,6 +19,21 @@ type urlRepository struct {
 
 func NewURLRepository(c *sql.DB, l *zap.Logger) URLRepository {
 	return &urlRepository{c, l}
+}
+
+func (ur *urlRepository) GetOriginalURL(ctx context.Context, short_url string) (string, error) {
+	query := `
+		SELECT url_address FROM urls
+		WHERE short_url = $1;
+	`
+	var su string
+	err := ur.client.QueryRowContext(ctx, query, short_url).Scan(&su)
+
+	if err != nil {
+		return "", err
+	}
+
+	return su, nil
 }
 
 func (ur *urlRepository) GetOne(ctx context.Context, id, uID string) (*models.URL, error) {
@@ -50,7 +66,11 @@ func (ur *urlRepository) GetOne(ctx context.Context, id, uID string) (*models.UR
 	)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, appErrors.ErrNotFound
+		}
 		return nil, appErrors.MapPostgresError(err)
+
 	}
 	return url, nil
 }
@@ -82,7 +102,7 @@ func (ur *urlRepository) GetUserURLs(ctx context.Context, uID string) ([]models.
 
 	for rows.Next() {
 		url := models.URL{}
-		err := rows.Scan(
+		if err := rows.Scan(
 			&url.Id,
 			&url.Identifier,
 			&url.Url,
@@ -91,15 +111,15 @@ func (ur *urlRepository) GetUserURLs(ctx context.Context, uID string) ([]models.
 			&url.UserID,
 			&url.CreatedAt,
 			&url.UpdatedAt,
-		)
-		if err != nil {
-			return nil, appErrors.MapPostgresError(err)
+		); err != nil {
+			return nil, err
 		}
+
 		urls = append(urls, url)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, appErrors.MapPostgresError(err)
+		return nil, err
 	}
 
 	return urls, nil

@@ -21,8 +21,10 @@ func (h *handler) GetURLByIdHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, appErrors.ErrNotFound) {
 			utils.WriteError(w, r, err)
+			return
 		}
 		utils.WriteError(w, r, err)
+		return
 	}
 
 	response := types.APIResponseBody{
@@ -40,6 +42,7 @@ func (h *handler) GetUserURLSHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		utils.WriteError(w, r, err)
+		return
 	}
 
 	response := types.APIResponseBody{

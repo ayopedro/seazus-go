@@ -21,8 +21,8 @@ func (app *application) routes() http.Handler {
 	// =======================
 	// ROUTES				||
 	// =======================
-	// Health route
 	mux.HandleFunc("GET /v1", app.h.IndexHandler)
+	// Health route
 	mux.HandleFunc("GET /v1/health", app.h.HealthCheckHandler)
 
 	// Auth routes
@@ -46,6 +46,11 @@ func (app *application) routes() http.Handler {
 	mux.Handle("/v1/auth/", http.StripPrefix("/v1/auth", authMux))
 	mux.Handle("/v1/users/", http.StripPrefix("/v1/users", app.h.Protected(usersMux)))
 	mux.Handle("/v1/urls/", http.StripPrefix("/v1/urls", app.h.Protected(urlsMux)))
+
+	mux.HandleFunc("GET /{short_url}", app.h.ShortURLRedirectHandler)
+
+	// Not found handler
+	mux.HandleFunc("/", app.h.NotFoundHandler)
 
 	var h http.Handler = mux
 	h = middleware.RequestLogger(h)
