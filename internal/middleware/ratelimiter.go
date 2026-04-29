@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ayopedro/seazus-go/internal/common"
+	"github.com/ayopedro/seazus-go/cmd/api/response"
 )
 
 type Limiter interface {
@@ -74,7 +74,7 @@ func RateLimiter(l Limiter) func(http.Handler) http.Handler {
 
 			if allow, retryAfter := l.Allow(ip); !allow {
 				w.Header().Set("Retry-After", fmt.Sprintf("%.f", retryAfter.Seconds()))
-				common.WriteError(w, r, errors.New(http.StatusText(429)))
+				response.WriteError(w, r, errors.New(http.StatusText(429)))
 				return
 			}
 

@@ -1,18 +1,20 @@
 package models
 
-type CreateURLPayload struct {
-	Identifier  string `json:"title"`
-	Description string `json:"description"`
-	Url         string `json:"url_address"`
-}
+import "time"
 
 type URL struct {
-	Id          string   `json:"id"`
-	Identifier  string   `json:"title"`
-	Description string   `json:"description"`
-	Url         string   `json:"url_address"`
-	ShortUrl    string   `json:"short_url"`
-	CreatedAt   JSONTime `json:"created_at"`
-	UpdatedAt   JSONTime `json:"updated_at"`
-	UserID      string   `json:"user_id"`
+	Id          string
+	Identifier  string
+	Description string
+	Url         string
+	ShortUrl    string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	UserID      string
+}
+
+type CreateURL struct {
+	Identifier  string
+	Description string
+	Url         string
 }

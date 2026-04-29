@@ -65,8 +65,7 @@ func StatusCode(err error) int {
 }
 
 func IsUniqueViolation(err error) bool {
-	var pqErr *pq.Error
-	if errors.As(err, &pqErr) {
+	if pqErr, ok := errors.AsType[*pq.Error](err); ok {
 		return pqErr.Code == "23505"
 	}
 	return false

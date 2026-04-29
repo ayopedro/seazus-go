@@ -5,86 +5,94 @@ import (
 	"errors"
 	"net/http"
 
-	utils "github.com/ayopedro/seazus-go/internal/common"
+	"github.com/ayopedro/seazus-go/cmd/api/dto"
+	"github.com/ayopedro/seazus-go/cmd/api/response"
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
-	"github.com/ayopedro/seazus-go/internal/common/types"
 	"github.com/ayopedro/seazus-go/internal/logger"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"go.uber.org/zap"
 )
 
-func (h *handler) GetURLByIdHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetURLByIdHandler(w http.ResponseWriter, r *http.Request) {
 	user_id, _ := r.Context().Value(userContextKey).(string)
 	id := r.PathValue("id")
-	url, err := h.service.URL.GetURL(r.Context(), id, user_id)
+	url, err := h.url.GetURL(r.Context(), id, user_id)
 
 	if err != nil {
 		if errors.Is(err, appErrors.ErrNotFound) {
-			utils.WriteError(w, r, err)
+			response.WriteError(w, r, err)
 			return
 		}
-		utils.WriteError(w, r, err)
+		response.WriteError(w, r, err)
 		return
 	}
 
-	response := types.APIResponseBody{
+	result := response.APIResponseBody{
 		Status:  true,
 		Message: "URL successfully fetched",
 		Data:    &url,
 	}
 
-	utils.WriteJSON(w, r, http.StatusOK, response)
+	response.WriteJSON(w, r, http.StatusOK, result)
 }
 
-func (h *handler) GetUserURLSHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetUserURLSHandler(w http.ResponseWriter, r *http.Request) {
 	user_id, _ := r.Context().Value(userContextKey).(string)
-	urls, err := h.service.User.GetUserURLs(r.Context(), user_id)
+	urls, err := h.user.GetUserURLs(r.Context(), user_id)
 
 	if err != nil {
-		utils.WriteError(w, r, err)
+		response.WriteError(w, r, err)
 		return
 	}
 
-	response := types.APIResponseBody{
+	result := response.APIResponseBody{
 		Status:  true,
 		Message: "URLs successfully fetched",
 		Data:    urls,
 	}
 
-	utils.WriteJSON(w, r, http.StatusOK, response)
+	response.WriteJSON(w, r, http.StatusOK, result)
 }
 
-func (h *handler) CreateURLHandler(w http.ResponseWriter, r *http.Request) {
-	payload := &models.CreateURLPayload{}
+func (h *Handler) CreateURLHandler(w http.ResponseWriter, r *http.Request) {
+	payload := &dto.CreateURLPayload{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		utils.WriteError(w, r, appErrors.ErrInvalidInput)
+		response.WriteError(w, r, appErrors.ErrInvalidInput)
 		return
 	}
 
 	if payload.Identifier == "" || payload.Url == "" {
-		utils.WriteError(w, r, appErrors.ErrInvalidInput)
+		response.WriteError(w, r, appErrors.ErrInvalidInput)
 		return
 	}
 
 	user_id, _ := r.Context().Value(userContextKey).(string)
-	short_url, err := h.service.URL.CreateShortURL(r.Context(), payload, user_id)
+	short_url, err := h.url.CreateShortURL(
+		r.Context(),
+		&models.CreateURL{
+			Identifier:  payload.Identifier,
+			Description: payload.Description,
+			Url:         payload.Url,
+		},
+		user_id,
+	)
 
 	if err != nil {
 		logger.Error("Error creating short URL", zap.String("err", err.Error()))
 		if errors.Is(err, appErrors.ErrConflict) {
-			utils.WriteError(w, r, err)
+			response.WriteError(w, r, err)
 			return
 		}
-		utils.WriteError(w, r, err)
+		response.WriteError(w, r, err)
 		return
 	}
 
-	response := types.APIResponseBody{
+	result := response.APIResponseBody{
 		Status:  true,
 		Message: "URL shortened successfully",
 		Data:    short_url,
 	}
 
-	utils.WriteJSON(w, r, http.StatusOK, response)
+	response.WriteJSON(w, r, http.StatusOK, result)
 }

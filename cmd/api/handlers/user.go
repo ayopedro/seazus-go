@@ -3,24 +3,23 @@ package handlers
 import (
 	"net/http"
 
-	utils "github.com/ayopedro/seazus-go/internal/common"
-	"github.com/ayopedro/seazus-go/internal/common/types"
+	"github.com/ayopedro/seazus-go/cmd/api/response"
 )
 
-func (h *handler) GetMyProfileHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetMyProfileHandler(w http.ResponseWriter, r *http.Request) {
 	userID, _ := r.Context().Value(userContextKey).(string)
 
-	user, err := h.service.User.GetUserProfile(r.Context(), userID)
+	user, err := h.user.GetUserProfile(r.Context(), userID)
 	if err != nil {
-		utils.WriteError(w, r, err)
+		response.WriteError(w, r, err)
 		return
 	}
 
-	response := types.APIResponseBody{
+	result := response.APIResponseBody{
 		Status:  true,
 		Message: "User profile successfully fetched",
 		Data:    &user,
 	}
 
-	utils.WriteJSON(w, r, http.StatusOK, response)
+	response.WriteJSON(w, r, http.StatusOK, result)
 }

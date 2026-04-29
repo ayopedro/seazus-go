@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	utils "github.com/ayopedro/seazus-go/internal/common"
+	"github.com/ayopedro/seazus-go/cmd/api/response"
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
 )
 
@@ -14,7 +14,7 @@ type contextKey string
 
 const userContextKey = contextKey("user")
 
-func (h *handler) Protected(next http.Handler) http.Handler {
+func (h *Handler) Protected(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var token string
 
@@ -31,22 +31,22 @@ func (h *handler) Protected(next http.Handler) http.Handler {
 		}
 
 		if token == "" {
-			utils.WriteError(w, r, appErrors.ErrInvalidToken)
+			response.WriteError(w, r, appErrors.ErrInvalidToken)
 			return
 		}
 
-		claims, err := utils.ValidateToken(token, h.config.JWTSecret)
+		claims, err := h.authValidator.Validate(token)
 		if err != nil {
-			utils.WriteError(w, r, appErrors.ErrInvalidToken)
+			response.WriteError(w, r, appErrors.ErrInvalidToken)
 			return
 		}
 
-		user, err := h.service.User.GetUserProfile(r.Context(), claims.UserID)
+		user, err := h.user.GetUserProfile(r.Context(), claims.UserID)
 		if err != nil {
 			if errors.Is(err, appErrors.ErrNotFound) {
-				utils.WriteError(w, r, appErrors.ErrNotFound)
+				response.WriteError(w, r, appErrors.ErrNotFound)
 			} else {
-				utils.WriteError(w, r, appErrors.ErrForbidden)
+				response.WriteError(w, r, appErrors.ErrForbidden)
 			}
 			return
 		}

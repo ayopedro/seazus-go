@@ -6,19 +6,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
-
-	"golang.org/x/crypto/bcrypt"
 )
-
-func HashPassword(pw string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
-	return string(hash), err
-}
-
-func ComparePasswords(pw, hash string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(pw))
-	return err
-}
 
 func Encrypt(plaintext []byte, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)

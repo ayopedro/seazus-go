@@ -1,4 +1,4 @@
-package service
+package user
 
 import (
 	"context"
@@ -9,17 +9,22 @@ import (
 	"go.uber.org/zap"
 )
 
+type Service interface {
+	GetUserProfile(ctx context.Context, uID string) (*models.User, error)
+	GetUserURLs(ctx context.Context, uID string) ([]models.URL, error)
+}
+
 type userService struct {
 	userRepo repository.UserRepository
 	urlRepo  repository.URLRepository
 	logger   *zap.Logger
 }
 
-func NewUserService(
+func NewService(
 	userRepo repository.UserRepository,
 	urlRepo repository.URLRepository,
 	logger *zap.Logger,
-) UserService {
+) Service {
 	return &userService{userRepo, urlRepo, logger}
 }
 

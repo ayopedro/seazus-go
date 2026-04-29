@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/ayopedro/seazus-go/cmd/api/dto"
 	"github.com/ayopedro/seazus-go/internal/common"
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
 	"github.com/ayopedro/seazus-go/internal/models"
@@ -125,7 +126,7 @@ func (ur *urlRepository) GetUserURLs(ctx context.Context, uID string) ([]models.
 	return urls, nil
 }
 
-func (ur *urlRepository) CreateShortURL(ctx context.Context, payload *models.CreateURLPayload, uID string) (string, error) {
+func (ur *urlRepository) CreateShortURL(ctx context.Context, payload *dto.CreateURLPayload, uID string) (string, error) {
 	var existing string
 
 	err := ur.client.QueryRowContext(

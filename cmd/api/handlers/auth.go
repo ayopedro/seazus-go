@@ -6,44 +6,50 @@ import (
 	"net/http"
 	"time"
 
-	utils "github.com/ayopedro/seazus-go/internal/common"
+	"github.com/ayopedro/seazus-go/cmd/api/dto"
+	"github.com/ayopedro/seazus-go/cmd/api/response"
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
-	"github.com/ayopedro/seazus-go/internal/common/types"
 	"github.com/ayopedro/seazus-go/internal/models"
 )
 
-func (h *handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	payload := &models.LoginUserRequest{}
+func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
+	payload := &dto.LoginRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		utils.WriteError(w, r, appErrors.ErrInvalidInput)
+		response.WriteError(w, r, appErrors.ErrInvalidInput)
 		return
 	}
 
 	if payload.Email == "" || payload.Password == "" {
-		utils.WriteError(w, r, appErrors.ErrInvalidInput)
+		response.WriteError(w, r, appErrors.ErrInvalidInput)
 		return
 	}
 
-	authUser, err := h.service.Auth.LoginUser(r.Context(), payload)
+	authUser, err := h.auth.LoginUser(
+		r.Context(),
+		&models.LoginUser{
+			Email:    payload.Email,
+			Password: payload.Password,
+		},
+	)
 	if err != nil {
 		if errors.Is(err, appErrors.ErrInvalidCredentials) {
-			utils.WriteError(w, r, err)
+			response.WriteError(w, r, err)
 			return
 		}
-		utils.WriteError(w, r, err)
+		response.WriteError(w, r, err)
 		return
 	}
 
 	setCookie(w, "auth_token", authUser.Token, time.Now().Add(1*time.Hour))
 
-	response := types.APIResponseBody{
+	result := response.APIResponseBody{
 		Status:  true,
 		Message: "Login successful",
 		Data:    authUser,
 	}
 
-	utils.WriteJSON(w, r, http.StatusOK, response)
+	response.WriteJSON(w, r, http.StatusOK, result)
 }
 
 func setCookie(w http.ResponseWriter, name, value string, expires time.Time) {
@@ -57,33 +63,41 @@ func setCookie(w http.ResponseWriter, name, value string, expires time.Time) {
 	})
 }
 
-func (h *handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	payload := &models.CreateUserRequest{}
+func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	payload := &dto.RegisterRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		utils.WriteError(w, r, appErrors.ErrInvalidInput)
+		response.WriteError(w, r, appErrors.ErrInvalidInput)
 		return
 	}
 
 	if payload.Email == "" || payload.Password == "" {
-		utils.WriteError(w, r, appErrors.ErrInvalidInput)
+		response.WriteError(w, r, appErrors.ErrInvalidInput)
 		return
 	}
 
-	err := h.service.Auth.CreateUser(r.Context(), payload)
+	err := h.auth.CreateUser(
+		r.Context(),
+		&models.CreateUser{
+			FirstName: payload.FirstName,
+			LastName:  payload.LastName,
+			Email:     payload.Email,
+			Password:  payload.Password,
+		},
+	)
 
 	if err != nil {
 		if errors.Is(err, appErrors.ErrConflict) {
-			utils.WriteError(w, r, err)
+			response.WriteError(w, r, err)
 			return
 		}
-		utils.WriteError(w, r, err)
+		response.WriteError(w, r, err)
 		return
 	}
-	response := types.APIResponseBody{
+	result := response.APIResponseBody{
 		Status:  true,
 		Message: "User created successfully",
 	}
 
-	utils.WriteJSON(w, r, http.StatusCreated, response)
+	response.WriteJSON(w, r, http.StatusCreated, result)
 }

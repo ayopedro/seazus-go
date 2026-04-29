@@ -1,4 +1,4 @@
-package service
+package auth
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	utils "github.com/ayopedro/seazus-go/internal/common"
 	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/ayopedro/seazus-go/internal/repository"
@@ -14,20 +13,25 @@ import (
 	"go.uber.org/zap"
 )
 
+type Service interface {
+	CreateUser(ctx context.Context, u *models.CreateUser) error
+	LoginUser(ctx context.Context, p *models.LoginUser) (*models.AuthResponse, error)
+}
+
 type authService struct {
 	repo      repository.UserRepository
 	jwtSecret string
 	logger    *zap.Logger
 }
 
-func NewAuthService(r repository.UserRepository, jwtSecret string, logger *zap.Logger) AuthService {
+func NewService(r repository.UserRepository, jwtSecret string, logger *zap.Logger) Service {
 	return &authService{r, jwtSecret, logger}
 }
 
-func (as *authService) CreateUser(ctx context.Context, u *models.CreateUserRequest) error {
+func (as *authService) CreateUser(ctx context.Context, u *models.CreateUser) error {
 	uID, _ := uuid.NewV7()
 
-	hash, err := utils.HashPassword(u.Password)
+	hash, err := hashPassword(u.Password)
 	if err != nil {
 		if as.logger != nil {
 			as.logger.Error("Error hashing password", zap.Error(err))
@@ -47,7 +51,7 @@ func (as *authService) CreateUser(ctx context.Context, u *models.CreateUserReque
 	return err
 }
 
-func (as *authService) LoginUser(ctx context.Context, p *models.LoginUserRequest) (*models.AuthResponse, error) {
+func (as *authService) LoginUser(ctx context.Context, p *models.LoginUser) (*models.AuthResponse, error) {
 	user, err := as.repo.GetWithEmail(ctx, p.Email)
 	if err != nil {
 		if errors.Is(err, appErrors.ErrNotFound) {
@@ -60,11 +64,11 @@ func (as *authService) LoginUser(ctx context.Context, p *models.LoginUserRequest
 		return nil, appErrors.ErrInvalidCredentials
 	}
 
-	if err = utils.ComparePasswords(p.Password, user.Password); err != nil {
+	if err = comparePasswords(p.Password, user.Password); err != nil {
 		return nil, appErrors.ErrInvalidCredentials
 	}
 
-	token, _ := utils.GenerateToken(as.jwtSecret, user.Id, 1*time.Hour)
+	token, _ := generateToken(as.jwtSecret, user.Id, 1*time.Hour)
 
 	response := &models.AuthResponse{
 		User: models.AuthUser{

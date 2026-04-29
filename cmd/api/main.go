@@ -15,11 +15,15 @@ import (
 	"github.com/ayopedro/seazus-go/internal/db"
 	"github.com/ayopedro/seazus-go/internal/logger"
 	ratelimiter "github.com/ayopedro/seazus-go/internal/middleware"
+	"github.com/ayopedro/seazus-go/internal/repository"
+	"github.com/ayopedro/seazus-go/internal/service/auth"
+	"github.com/ayopedro/seazus-go/internal/service/url"
+	"github.com/ayopedro/seazus-go/internal/service/user"
 	"go.uber.org/zap"
 )
 
-func (app *application) createServer(handler http.Handler) *http.Server {
-	addr := fmt.Sprintf(":%s", app.config.Port)
+func createServer(cfg *config.Config, handler http.Handler) *http.Server {
+	addr := fmt.Sprintf(":%s", cfg.Port)
 
 	logger.Info("Configuring server settings")
 
@@ -88,14 +92,21 @@ func main() {
 	defer db.Close()
 	logger.Info("Database is connected")
 
-	h := handlers.NewHandler(cfg, db, appLogger)
+	// repositories
+	userRepo := repository.NewUserRepository(db, appLogger)
+	urlRepo := repository.NewURLRepository(db, appLogger)
 
-	app := &application{
-		config:  cfg,
-		limiter: limiter,
-		h:       h,
-	}
+	// services
+	authSvc := auth.NewService(userRepo, cfg.JWTSecret, appLogger)
+	userSvc := user.NewService(userRepo, urlRepo, appLogger)
+	urlSvc := url.NewService(urlRepo, appLogger)
 
-	server := app.createServer(app.routes())
+	authVal := auth.NewJWTValidator(cfg.JWTSecret)
+
+	h := handlers.NewHandler(authSvc, authVal, userSvc, urlSvc)
+
+	router := routes(cfg, h, limiter)
+
+	server := createServer(cfg, router)
 	runServer(server)
 }

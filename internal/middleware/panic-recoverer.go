@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/ayopedro/seazus-go/internal/common"
+	"github.com/ayopedro/seazus-go/cmd/api/response"
 	"github.com/ayopedro/seazus-go/internal/logger"
 	"go.uber.org/zap"
 )
@@ -20,7 +20,7 @@ func RecoverPanic(next http.Handler) http.Handler {
 					zap.String("path", r.URL.Path),
 				)
 
-				common.WriteError(
+				response.WriteError(
 					w,
 					r,
 					errors.New(http.StatusText(http.StatusInternalServerError)),
