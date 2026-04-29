@@ -16,12 +16,12 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &dto.LoginRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		response.WriteError(w, r, appErrors.ErrInvalidInput)
+		response.WriteError(w, appErrors.ErrInvalidInput)
 		return
 	}
 
 	if payload.Email == "" || payload.Password == "" {
-		response.WriteError(w, r, appErrors.ErrInvalidInput)
+		response.WriteError(w, appErrors.ErrInvalidInput)
 		return
 	}
 
@@ -34,22 +34,26 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	)
 	if err != nil {
 		if errors.Is(err, appErrors.ErrInvalidCredentials) {
-			response.WriteError(w, r, err)
+			response.WriteError(w, err)
 			return
 		}
-		response.WriteError(w, r, err)
+		response.WriteError(w, err)
 		return
 	}
 
 	setCookie(w, "auth_token", authUser.Token, time.Now().Add(1*time.Hour))
 
-	result := response.APIResponseBody{
-		Status:  true,
-		Message: "Login successful",
-		Data:    authUser,
+	data := dto.LoginResponse{
+		Token: authUser.Token,
+		User: dto.AuthUser{
+			Id:         authUser.User.Id,
+			FirstName:  authUser.User.FirstName,
+			Email:      authUser.User.Email,
+			IsVerified: authUser.User.IsVerified,
+		},
 	}
 
-	response.WriteJSON(w, r, http.StatusOK, result)
+	response.WriteJSON(w, http.StatusOK, "Login successful", data)
 }
 
 func setCookie(w http.ResponseWriter, name, value string, expires time.Time) {
@@ -67,12 +71,12 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &dto.RegisterRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		response.WriteError(w, r, appErrors.ErrInvalidInput)
+		response.WriteError(w, appErrors.ErrInvalidInput)
 		return
 	}
 
 	if payload.Email == "" || payload.Password == "" {
-		response.WriteError(w, r, appErrors.ErrInvalidInput)
+		response.WriteError(w, appErrors.ErrInvalidInput)
 		return
 	}
 
@@ -88,16 +92,12 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, appErrors.ErrConflict) {
-			response.WriteError(w, r, err)
+			response.WriteError(w, err)
 			return
 		}
-		response.WriteError(w, r, err)
+		response.WriteError(w, err)
 		return
 	}
-	result := response.APIResponseBody{
-		Status:  true,
-		Message: "User created successfully",
-	}
 
-	response.WriteJSON(w, r, http.StatusCreated, result)
+	response.WriteJSON(w, http.StatusCreated, "User created successfully", nil)
 }

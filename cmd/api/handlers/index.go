@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -8,26 +9,16 @@ import (
 )
 
 func (h *Handler) IndexHandler(w http.ResponseWriter, r *http.Request) {
-	result := response.APIResponseBody{
-		Status:  true,
-		Message: "Welcome to the Seazus(Go) API",
-		Data:    []string{},
-	}
-
-	response.WriteJSON(w, r, http.StatusOK, result)
+	response.WriteJSON(w, http.StatusOK, "Welcome to the Seazus(Go) API", nil)
 }
 
 func (h *Handler) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	result := response.APIResponseBody{
-		Status:  true,
-		Message: "Server is healthy",
-		Data: map[string]string{
-			"status": "available",
-			"time":   time.Now().String(),
-		},
+	result := map[string]string{
+		"status": "available",
+		"time":   time.Now().String(),
 	}
 
-	response.WriteJSON(w, r, http.StatusOK, result)
+	response.WriteJSON(w, http.StatusOK, "", result)
 }
 
 func (h *Handler) ShortURLRedirectHandler(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +26,7 @@ func (h *Handler) ShortURLRedirectHandler(w http.ResponseWriter, r *http.Request
 	original_url, err := h.url.GetOriginalURL(r.Context(), path)
 
 	if err != nil {
-		response.WriteError(w, r, err)
+		response.WriteError(w, err)
 		return
 	}
 
@@ -43,11 +34,6 @@ func (h *Handler) ShortURLRedirectHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (h *Handler) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	result := response.APIResponseBody{
-		Status:  false,
-		Message: "Endpoint not found",
-		Data:    []string{},
-	}
 
-	response.WriteJSON(w, r, http.StatusNotFound, result)
+	response.WriteError(w, errors.New("Endpoint not found"))
 }

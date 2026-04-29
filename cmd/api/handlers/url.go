@@ -20,20 +20,25 @@ func (h *Handler) GetURLByIdHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, appErrors.ErrNotFound) {
-			response.WriteError(w, r, err)
+			response.WriteError(w, err)
 			return
 		}
-		response.WriteError(w, r, err)
+		response.WriteError(w, err)
 		return
 	}
 
-	result := response.APIResponseBody{
-		Status:  true,
-		Message: "URL successfully fetched",
-		Data:    &url,
+	result := dto.URL{
+		Id:          url.Id,
+		Identifier:  url.Identifier,
+		Description: url.Description,
+		Url:         url.Url,
+		ShortUrl:    url.ShortUrl,
+		CreatedAt:   dto.JSONTime(url.CreatedAt),
+		UpdatedAt:   dto.JSONTime(url.UpdatedAt),
+		UserID:      url.UserID,
 	}
 
-	response.WriteJSON(w, r, http.StatusOK, result)
+	response.WriteJSON(w, http.StatusOK, "URL successfully fetched", result)
 }
 
 func (h *Handler) GetUserURLSHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,29 +46,22 @@ func (h *Handler) GetUserURLSHandler(w http.ResponseWriter, r *http.Request) {
 	urls, err := h.user.GetUserURLs(r.Context(), user_id)
 
 	if err != nil {
-		response.WriteError(w, r, err)
+		response.WriteError(w, err)
 		return
 	}
-
-	result := response.APIResponseBody{
-		Status:  true,
-		Message: "URLs successfully fetched",
-		Data:    urls,
-	}
-
-	response.WriteJSON(w, r, http.StatusOK, result)
+	response.WriteJSON(w, http.StatusOK, "URLs successfully fetched", urls)
 }
 
 func (h *Handler) CreateURLHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &dto.CreateURLPayload{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		response.WriteError(w, r, appErrors.ErrInvalidInput)
+		response.WriteError(w, appErrors.ErrInvalidInput)
 		return
 	}
 
 	if payload.Identifier == "" || payload.Url == "" {
-		response.WriteError(w, r, appErrors.ErrInvalidInput)
+		response.WriteError(w, appErrors.ErrInvalidInput)
 		return
 	}
 
@@ -81,18 +79,12 @@ func (h *Handler) CreateURLHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error("Error creating short URL", zap.String("err", err.Error()))
 		if errors.Is(err, appErrors.ErrConflict) {
-			response.WriteError(w, r, err)
+			response.WriteError(w, err)
 			return
 		}
-		response.WriteError(w, r, err)
+		response.WriteError(w, err)
 		return
 	}
 
-	result := response.APIResponseBody{
-		Status:  true,
-		Message: "URL shortened successfully",
-		Data:    short_url,
-	}
-
-	response.WriteJSON(w, r, http.StatusOK, result)
+	response.WriteJSON(w, http.StatusOK, "URL shortened successfully", short_url)
 }

@@ -5,23 +5,28 @@ import (
 	"net/http"
 )
 
-type APIResponseBody struct {
+type ResponseBody struct {
 	Status  bool        `json:"status"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data,omitempty"`
 }
 
-func WriteJSON(w http.ResponseWriter, r *http.Request, status int, response APIResponseBody) error {
+func WriteJSON(w http.ResponseWriter, status int, message string, data any) error {
+	response := ResponseBody{
+		Status:  status >= 200 && status < 300,
+		Message: message,
+		Data:    data,
+	}
+
 	js, err := json.Marshal(response)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Internal Server Error"))
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return err
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	w.Write(js)
 
-	return nil
+	_, err = w.Write(js)
+	return err
 }

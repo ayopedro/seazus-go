@@ -10,10 +10,10 @@ import (
 	"go.uber.org/zap"
 )
 
-func WriteError(w http.ResponseWriter, r *http.Request, err error) error {
+func WriteError(w http.ResponseWriter, err error) error {
 	status := appErrors.StatusCode(err)
 
-	response := APIResponseBody{
+	response := ResponseBody{
 		Status:  false,
 		Message: err.Error(),
 	}

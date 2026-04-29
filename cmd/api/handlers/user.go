@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/ayopedro/seazus-go/cmd/api/dto"
 	"github.com/ayopedro/seazus-go/cmd/api/response"
 )
 
@@ -11,15 +12,18 @@ func (h *Handler) GetMyProfileHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.user.GetUserProfile(r.Context(), userID)
 	if err != nil {
-		response.WriteError(w, r, err)
+		response.WriteError(w, err)
 		return
 	}
 
-	result := response.APIResponseBody{
-		Status:  true,
-		Message: "User profile successfully fetched",
-		Data:    &user,
+	result := dto.User{
+		Id:         user.Id,
+		FirstName:  user.FirstName,
+		LastName:   user.LastName,
+		IsVerified: user.IsVerified,
+		CreatedAt:  dto.JSONTime(user.CreatedAt),
+		UpdatedAt:  dto.JSONTime(user.UpdatedAt),
 	}
 
-	response.WriteJSON(w, r, http.StatusOK, result)
+	response.WriteJSON(w, http.StatusOK, "User profile successfully fetched", result)
 }

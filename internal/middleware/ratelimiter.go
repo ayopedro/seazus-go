@@ -74,7 +74,7 @@ func RateLimiter(l Limiter) func(http.Handler) http.Handler {
 
 			if allow, retryAfter := l.Allow(ip); !allow {
 				w.Header().Set("Retry-After", fmt.Sprintf("%.f", retryAfter.Seconds()))
-				response.WriteError(w, r, errors.New(http.StatusText(429)))
+				response.WriteError(w, errors.New(http.StatusText(429)))
 				return
 			}
 

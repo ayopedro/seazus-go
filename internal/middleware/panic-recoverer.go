@@ -22,7 +22,6 @@ func RecoverPanic(next http.Handler) http.Handler {
 
 				response.WriteError(
 					w,
-					r,
 					errors.New(http.StatusText(http.StatusInternalServerError)),
 				)
 			}

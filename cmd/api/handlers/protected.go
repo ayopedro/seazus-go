@@ -31,22 +31,22 @@ func (h *Handler) Protected(next http.Handler) http.Handler {
 		}
 
 		if token == "" {
-			response.WriteError(w, r, appErrors.ErrInvalidToken)
+			response.WriteError(w, appErrors.ErrInvalidToken)
 			return
 		}
 
 		claims, err := h.authValidator.Validate(token)
 		if err != nil {
-			response.WriteError(w, r, appErrors.ErrInvalidToken)
+			response.WriteError(w, appErrors.ErrInvalidToken)
 			return
 		}
 
 		user, err := h.user.GetUserProfile(r.Context(), claims.UserID)
 		if err != nil {
 			if errors.Is(err, appErrors.ErrNotFound) {
-				response.WriteError(w, r, appErrors.ErrNotFound)
+				response.WriteError(w, appErrors.ErrNotFound)
 			} else {
-				response.WriteError(w, r, appErrors.ErrForbidden)
+				response.WriteError(w, appErrors.ErrForbidden)
 			}
 			return
 		}
