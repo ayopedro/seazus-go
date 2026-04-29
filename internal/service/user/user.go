@@ -3,9 +3,9 @@ package user
 import (
 	"context"
 
-	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
 	"github.com/ayopedro/seazus-go/internal/models"
-	"github.com/ayopedro/seazus-go/internal/repository"
+	"github.com/ayopedro/seazus-go/internal/repository/url"
+	"github.com/ayopedro/seazus-go/internal/repository/user"
 	"go.uber.org/zap"
 )
 
@@ -15,14 +15,14 @@ type Service interface {
 }
 
 type userService struct {
-	userRepo repository.UserRepository
-	urlRepo  repository.URLRepository
+	userRepo user.Repository
+	urlRepo  url.Repository
 	logger   *zap.Logger
 }
 
 func NewService(
-	userRepo repository.UserRepository,
-	urlRepo repository.URLRepository,
+	userRepo user.Repository,
+	urlRepo url.Repository,
 	logger *zap.Logger,
 ) Service {
 	return &userService{userRepo, urlRepo, logger}
@@ -32,7 +32,7 @@ func (us *userService) GetUserProfile(ctx context.Context, uID string) (*models.
 	user, err := us.userRepo.Get(ctx, uID)
 
 	if err != nil {
-		return nil, appErrors.ErrNotFound
+		return nil, err
 	}
 
 	return user, nil
@@ -42,8 +42,8 @@ func (us *userService) GetUserURLs(ctx context.Context, uID string) ([]models.UR
 	urls, err := us.urlRepo.GetUserURLs(ctx, uID)
 
 	if err != nil {
-		return nil, appErrors.ErrInternal
+		return nil, err
 	}
 
-	return urls, err
+	return urls, nil
 }

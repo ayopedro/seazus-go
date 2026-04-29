@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/ayopedro/seazus-go/cmd/api/response"
+	"github.com/ayopedro/seazus-go/internal/apperrors"
 	"github.com/ayopedro/seazus-go/internal/logger"
 	"go.uber.org/zap"
 )
@@ -22,7 +22,8 @@ func RecoverPanic(next http.Handler) http.Handler {
 
 				response.WriteError(
 					w,
-					errors.New(http.StatusText(http.StatusInternalServerError)),
+					http.StatusInternalServerError,
+					apperrors.ErrInternal,
 				)
 			}
 		}()

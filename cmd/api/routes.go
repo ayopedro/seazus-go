@@ -35,6 +35,8 @@ func routes(cfg *config.Config, h *handlers.Handler, limiter ratelimiter.Limiter
 
 	urlsMux.HandleFunc("GET /{id}", h.GetURLByIdHandler)
 	urlsMux.HandleFunc("POST /", h.CreateURLHandler)
+	urlsMux.HandleFunc("PATCH /{id}", h.UpdateURLHandler)
+	urlsMux.HandleFunc("DELETE /{id}", h.DeleteURLHandler)
 
 	// Route grouping
 	mux.Handle("/v1/auth/", http.StripPrefix("/v1/auth", authMux))

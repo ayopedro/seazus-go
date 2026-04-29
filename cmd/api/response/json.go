@@ -6,27 +6,20 @@ import (
 )
 
 type ResponseBody struct {
-	Status  bool        `json:"status"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
+	Status  bool   `json:"status"`
+	Message string `json:"message"`
+	Data    any    `json:"data,omitempty"`
 }
 
-func WriteJSON(w http.ResponseWriter, status int, message string, data any) error {
-	response := ResponseBody{
-		Status:  status >= 200 && status < 300,
+func WriteJSON(w http.ResponseWriter, statusCode int, message string, data any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+
+	resp := ResponseBody{
+		Status:  statusCode >= 200 && statusCode < 300,
 		Message: message,
 		Data:    data,
 	}
 
-	js, err := json.Marshal(response)
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return err
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-
-	_, err = w.Write(js)
-	return err
+	_ = json.NewEncoder(w).Encode(resp)
 }

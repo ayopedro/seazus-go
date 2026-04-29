@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/ayopedro/seazus-go/cmd/api/response"
-	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
+	"github.com/ayopedro/seazus-go/internal/apperrors"
 )
 
 type contextKey string
@@ -31,22 +31,22 @@ func (h *Handler) Protected(next http.Handler) http.Handler {
 		}
 
 		if token == "" {
-			response.WriteError(w, appErrors.ErrInvalidToken)
+			response.WriteError(w, http.StatusUnauthorized, apperrors.ErrUnauthorized)
 			return
 		}
 
 		claims, err := h.authValidator.Validate(token)
 		if err != nil {
-			response.WriteError(w, appErrors.ErrInvalidToken)
+			response.WriteError(w, http.StatusUnauthorized, apperrors.ErrUnauthorized)
 			return
 		}
 
 		user, err := h.user.GetUserProfile(r.Context(), claims.UserID)
 		if err != nil {
-			if errors.Is(err, appErrors.ErrNotFound) {
-				response.WriteError(w, appErrors.ErrNotFound)
+			if errors.Is(err, apperrors.ErrUserNotFound) {
+				response.WriteError(w, http.StatusNotFound, apperrors.ErrUserNotFound)
 			} else {
-				response.WriteError(w, appErrors.ErrForbidden)
+				response.WriteError(w, http.StatusForbidden, apperrors.ErrForbidden)
 			}
 			return
 		}

@@ -26,7 +26,7 @@ func (h *Handler) ShortURLRedirectHandler(w http.ResponseWriter, r *http.Request
 	original_url, err := h.url.GetOriginalURL(r.Context(), path)
 
 	if err != nil {
-		response.WriteError(w, err)
+		response.WriteError(w, http.StatusNotFound, err)
 		return
 	}
 
@@ -34,6 +34,5 @@ func (h *Handler) ShortURLRedirectHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (h *Handler) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
-
-	response.WriteError(w, errors.New("Endpoint not found"))
+	response.WriteError(w, http.StatusNotFound, errors.New("Endpoint not found"))
 }

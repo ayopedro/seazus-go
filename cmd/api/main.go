@@ -15,7 +15,8 @@ import (
 	"github.com/ayopedro/seazus-go/internal/db"
 	"github.com/ayopedro/seazus-go/internal/logger"
 	ratelimiter "github.com/ayopedro/seazus-go/internal/middleware"
-	"github.com/ayopedro/seazus-go/internal/repository"
+	url_repo "github.com/ayopedro/seazus-go/internal/repository/url"
+	user_repo "github.com/ayopedro/seazus-go/internal/repository/user"
 	"github.com/ayopedro/seazus-go/internal/service/auth"
 	"github.com/ayopedro/seazus-go/internal/service/url"
 	"github.com/ayopedro/seazus-go/internal/service/user"
@@ -93,8 +94,8 @@ func main() {
 	logger.Info("Database is connected")
 
 	// repositories
-	userRepo := repository.NewUserRepository(db, appLogger)
-	urlRepo := repository.NewURLRepository(db, appLogger)
+	userRepo := user_repo.NewRepository(db, appLogger)
+	urlRepo := url_repo.NewRepository(db, appLogger)
 
 	// services
 	authSvc := auth.NewService(userRepo, cfg.JWTSecret, appLogger)

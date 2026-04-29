@@ -2,13 +2,11 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"strings"
 	"time"
 
-	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
 	"github.com/ayopedro/seazus-go/internal/models"
-	"github.com/ayopedro/seazus-go/internal/repository"
+	"github.com/ayopedro/seazus-go/internal/repository/user"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -19,12 +17,12 @@ type Service interface {
 }
 
 type authService struct {
-	repo      repository.UserRepository
+	repo      user.Repository
 	jwtSecret string
 	logger    *zap.Logger
 }
 
-func NewService(r repository.UserRepository, jwtSecret string, logger *zap.Logger) Service {
+func NewService(r user.Repository, jwtSecret string, logger *zap.Logger) Service {
 	return &authService{r, jwtSecret, logger}
 }
 
@@ -36,7 +34,7 @@ func (as *authService) CreateUser(ctx context.Context, u *models.CreateUser) err
 		if as.logger != nil {
 			as.logger.Error("Error hashing password", zap.Error(err))
 		}
-		return appErrors.ErrInternal
+		return err
 	}
 
 	user := &models.User{
@@ -54,18 +52,15 @@ func (as *authService) CreateUser(ctx context.Context, u *models.CreateUser) err
 func (as *authService) LoginUser(ctx context.Context, p *models.LoginUser) (*models.AuthResponse, error) {
 	user, err := as.repo.GetWithEmail(ctx, p.Email)
 	if err != nil {
-		if errors.Is(err, appErrors.ErrNotFound) {
-			return nil, appErrors.ErrInvalidToken
-		}
-		return nil, appErrors.ErrInternal
+		return nil, err
 	}
 
 	if user == nil {
-		return nil, appErrors.ErrInvalidCredentials
+		return nil, err
 	}
 
 	if err = comparePasswords(p.Password, user.Password); err != nil {
-		return nil, appErrors.ErrInvalidCredentials
+		return nil, err
 	}
 
 	token, _ := generateToken(as.jwtSecret, user.Id, 1*time.Hour)

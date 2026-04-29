@@ -1,24 +1,32 @@
-package repository
+package url
 
 import (
 	"context"
 	"database/sql"
 	"errors"
 
-	"github.com/ayopedro/seazus-go/cmd/api/dto"
 	"github.com/ayopedro/seazus-go/internal/common"
-	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"go.uber.org/zap"
 )
+
+type Repository interface {
+	GetOne(ctx context.Context, id, uID string) (*models.URL, error)
+	GetUserURLs(ctx context.Context, uID string) ([]models.URL, error)
+	GetOriginalURL(ctx context.Context, short_url string) (string, error)
+	CreateShortURL(ctx context.Context, payload *models.CreateURL, uID string) (string, error)
+	UpdateURL(ctx context.Context, id string, payload *models.UpdateURL, uID string) (*models.URL, error)
+	DeleteURL(ctx context.Context, id, uID string) error
+}
 
 type urlRepository struct {
 	client *sql.DB
 	logger *zap.Logger
 }
 
-func NewURLRepository(c *sql.DB, l *zap.Logger) URLRepository {
+func NewRepository(c *sql.DB, l *zap.Logger) Repository {
 	return &urlRepository{c, l}
 }
 
@@ -67,11 +75,7 @@ func (ur *urlRepository) GetOne(ctx context.Context, id, uID string) (*models.UR
 	)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, appErrors.ErrNotFound
-		}
-		return nil, appErrors.MapPostgresError(err)
-
+		return nil, err
 	}
 	return url, nil
 }
@@ -97,7 +101,7 @@ func (ur *urlRepository) GetUserURLs(ctx context.Context, uID string) ([]models.
 		if ur.logger != nil {
 			ur.logger.Error("failed to query user URLs", zap.Error(err))
 		}
-		return nil, appErrors.ErrInternal
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -126,7 +130,7 @@ func (ur *urlRepository) GetUserURLs(ctx context.Context, uID string) ([]models.
 	return urls, nil
 }
 
-func (ur *urlRepository) CreateShortURL(ctx context.Context, payload *dto.CreateURLPayload, uID string) (string, error) {
+func (ur *urlRepository) CreateShortURL(ctx context.Context, payload *models.CreateURL, uID string) (string, error) {
 	var existing string
 
 	err := ur.client.QueryRowContext(
@@ -137,7 +141,7 @@ func (ur *urlRepository) CreateShortURL(ctx context.Context, payload *dto.Create
 	).Scan(&existing)
 
 	if err == nil {
-		return "", appErrors.ErrConflict
+		return "", err
 	}
 
 	query := `
@@ -157,7 +161,7 @@ func (ur *urlRepository) CreateShortURL(ctx context.Context, payload *dto.Create
 		short_url := common.RandStringRunes(7)
 		id, err := uuid.NewV7()
 		if err != nil {
-			return "", appErrors.ErrInternal
+			return "", err
 		}
 
 		var result string
@@ -172,14 +176,71 @@ func (ur *urlRepository) CreateShortURL(ctx context.Context, payload *dto.Create
 			uID,
 		).Scan(&result)
 
-		if appErrors.IsUniqueViolation(err) {
-			continue
+		if pgErr, ok := errors.AsType[*pq.Error](err); ok {
+			if pgErr.Code == "23505" {
+				continue
+			}
 		}
 
 		if err == nil {
 			return result, nil
 		}
-		return "", appErrors.ErrInternal
+		return "", err
 	}
-	return "", appErrors.ErrInternal
+	return "", err
+}
+
+func (ur *urlRepository) UpdateURL(ctx context.Context, id string, payload *models.UpdateURL, uID string) (*models.URL, error) {
+	query := `
+		UPDATE urls
+		SET
+			title = $1,
+			description = $2,
+			url_address = $3
+		WHERE id = $4
+		AND user_id = $5
+		RETURNING id, title, description, url_address, user_id;
+	`
+
+	var updatedURL models.URL
+	err := ur.client.QueryRowContext(
+		ctx,
+		query,
+		payload.Identifier,
+		payload.Description,
+		payload.Url,
+		id,
+		uID,
+	).Scan(
+		&updatedURL.Id,
+		&updatedURL.Identifier,
+		&updatedURL.Description,
+		&updatedURL.Url,
+		&updatedURL.UserID,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &updatedURL, nil
+}
+
+func (ur *urlRepository) DeleteURL(ctx context.Context, id, uID string) error {
+	query := `
+		DELETE FROM urls
+		WHERE id = $1
+		AND user_id = $2
+	`
+
+	res, err := ur.client.ExecContext(ctx, query, id, uID)
+
+	if ra, _ := res.RowsAffected(); ra == 0 {
+		return errors.New("Failed to delete resource")
+	}
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

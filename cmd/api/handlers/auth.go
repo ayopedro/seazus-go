@@ -8,7 +8,7 @@ import (
 
 	"github.com/ayopedro/seazus-go/cmd/api/dto"
 	"github.com/ayopedro/seazus-go/cmd/api/response"
-	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
+	"github.com/ayopedro/seazus-go/internal/apperrors"
 	"github.com/ayopedro/seazus-go/internal/models"
 )
 
@@ -16,12 +16,12 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &dto.LoginRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		response.WriteError(w, appErrors.ErrInvalidInput)
+		response.WriteError(w, http.StatusBadRequest, apperrors.ErrInvalidPayload)
 		return
 	}
 
 	if payload.Email == "" || payload.Password == "" {
-		response.WriteError(w, appErrors.ErrInvalidInput)
+		response.WriteError(w, http.StatusBadRequest, apperrors.ErrInvalidPayload)
 		return
 	}
 
@@ -33,11 +33,11 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 	if err != nil {
-		if errors.Is(err, appErrors.ErrInvalidCredentials) {
-			response.WriteError(w, err)
+		if errors.Is(err, apperrors.ErrUnauthorized) {
+			response.WriteError(w, http.StatusUnauthorized, err)
 			return
 		}
-		response.WriteError(w, err)
+		response.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -71,12 +71,12 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &dto.RegisterRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
-		response.WriteError(w, appErrors.ErrInvalidInput)
+		response.WriteError(w, http.StatusBadRequest, apperrors.ErrInvalidPayload)
 		return
 	}
 
 	if payload.Email == "" || payload.Password == "" {
-		response.WriteError(w, appErrors.ErrInvalidInput)
+		response.WriteError(w, http.StatusBadRequest, apperrors.ErrInvalidPayload)
 		return
 	}
 
@@ -91,11 +91,11 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
-		if errors.Is(err, appErrors.ErrConflict) {
-			response.WriteError(w, err)
+		if errors.Is(err, apperrors.ErrEmailConflict) {
+			response.WriteError(w, http.StatusConflict, err)
 			return
 		}
-		response.WriteError(w, err)
+		response.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 

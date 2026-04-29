@@ -1,21 +1,27 @@
-package repository
+package user
 
 import (
 	"context"
 	"database/sql"
 	"strings"
 
-	appErrors "github.com/ayopedro/seazus-go/internal/common/app_errors"
+	"github.com/ayopedro/seazus-go/internal/apperrors"
 	"github.com/ayopedro/seazus-go/internal/models"
 	"go.uber.org/zap"
 )
+
+type Repository interface {
+	Create(ctx context.Context, u *models.User) error
+	Get(ctx context.Context, uId string) (*models.User, error)
+	GetWithEmail(ctx context.Context, email string) (*models.User, error)
+}
 
 type userRepository struct {
 	client *sql.DB
 	logger *zap.Logger
 }
 
-func NewUserRepository(c *sql.DB, logger *zap.Logger) UserRepository {
+func NewRepository(c *sql.DB, logger *zap.Logger) Repository {
 	return &userRepository{client: c, logger: logger}
 }
 
@@ -24,7 +30,7 @@ func (ur *userRepository) Create(ctx context.Context, u *models.User) error {
 
 	_, err := ur.client.ExecContext(ctx, query, u.Id, u.FirstName, u.LastName, u.Email, u.Password)
 	if err != nil {
-		return appErrors.MapPostgresError(err)
+		return apperrors.ErrIdentifierTaken
 	}
 	return nil
 }
@@ -48,7 +54,7 @@ func (ur *userRepository) Get(ctx context.Context, uId string) (*models.User, er
 		&user.UpdatedAt,
 	)
 	if err != nil {
-		return nil, appErrors.MapPostgresError(err)
+		return nil, apperrors.ErrUserNotFound
 	}
 
 	return user, nil
@@ -74,7 +80,7 @@ func (ur *userRepository) GetWithEmail(ctx context.Context, email string) (*mode
 		&user.UpdatedAt,
 	)
 	if err != nil {
-		return nil, appErrors.MapPostgresError(err)
+		return nil, apperrors.ErrUserNotFound
 	}
 
 	return user, nil

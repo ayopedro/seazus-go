@@ -18,3 +18,9 @@ type CreateURL struct {
 	Description string
 	Url         string
 }
+
+type UpdateURL struct {
+	Identifier  string
+	Description string
+	Url         string
+}

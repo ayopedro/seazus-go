@@ -16,3 +16,9 @@ type URL struct {
 	UpdatedAt   JSONTime `json:"updated_at"`
 	UserID      string   `json:"user_id"`
 }
+
+type UpdateURLPayload struct {
+	Identifier  string `json:"title"`
+	Description string `json:"description"`
+	Url         string `json:"original_url"`
+}
