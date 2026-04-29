@@ -5,7 +5,7 @@
     "buildCommand": "make build"
   },
   "deploy": {
-    "startCommand": "./bin/main",
+    "startCommand": "make db-up && bin/seazus-api",
     "restartPolicyType": "on-failure"
   }
 }
