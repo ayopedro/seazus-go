@@ -2,10 +2,10 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "railpack",
-    "buildCommand": "make build"
+    "buildCommand": "go build -ldflags=\"-s -w\" -o bin/seazus-api ./cmd/api"
   },
   "deploy": {
-    "startCommand": "make db-up && bin/seazus-api",
+    "startCommand": "bin/seazus-api",
     "restartPolicyType": "on-failure"
   }
 }
