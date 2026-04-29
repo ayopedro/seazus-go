@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/ayopedro/seazus-go/internal/config"
@@ -11,10 +10,7 @@ import (
 )
 
 func New(cfg config.DBConfig) (*sql.DB, error) {
-	dsn := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name,
-	)
+	dsn := cfg.URI
 	db, err := sql.Open("postgres", dsn)
 
 	if err != nil {

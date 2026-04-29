@@ -20,11 +20,7 @@ type Config struct {
 }
 
 type DBConfig struct {
-	User         string `mapstructure:"DB_USER"`
-	Password     string `mapstructure:"DB_PASSWORD"`
-	Host         string `mapstructure:"DB_HOST"`
-	Port         string `mapstructure:"DB_PORT"`
-	Name         string `mapstructure:"DB_NAME"`
+	URI          string `mapstructure:"DB_URI"`
 	MaxOpenConns int    `mapstructure:"DB_MAX_OPEN_CONNS"`
 	MaxIdleConns int    `mapstructure:"DB_MAX_IDLE_CONNS"`
 	MaxIdleTime  string `mapstructure:"DB_MAX_IDLE_TIME"`
@@ -45,8 +41,7 @@ func Load() *Config {
 	once.Do(func() {
 		viper.SetDefault("APP_ENV", "development")
 		viper.SetDefault("PORT", "8080")
-		viper.SetDefault("DB_HOST", "localhost")
-		viper.SetDefault("DB_PORT", "5432")
+		viper.SetDefault("DB_URI", "postgres://ayotunde:password@localhost:5432/seazus-go?sslmode=disable")
 		viper.SetDefault("DB_MAX_OPEN_CONNS", 25)
 		viper.SetDefault("DB_MAX_IDLE_CONNS", 25)
 		viper.SetDefault("DB_MAX_IDLE_TIME", "15m")
